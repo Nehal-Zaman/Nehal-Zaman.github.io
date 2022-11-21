@@ -3,4 +3,4 @@ layout: default
 ---
 
 # WRITEUPS
-* [Nodeblog - HackTheBox](./nodeblog_htb.html)
+* [Nodeblog - HackTheBox](./posts/nodeblog_htb.html)
