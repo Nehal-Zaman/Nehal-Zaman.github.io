@@ -6,6 +6,6 @@ author: Nehal Zaman
 tags: ["nosql injection", "xxe", "insecure deserialization"]
 ---
 
-![](assets/images/writeups/nodeblog/banner.png)
+![](/assets/images/writeups/nodeblog/banner.png)
 
 Writeup in progress.
