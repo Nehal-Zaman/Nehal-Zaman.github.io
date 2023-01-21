@@ -7,3 +7,4 @@ layout: default
 * [Precious - HackTheBox](./posts/precious_htb.html)
 * [Neonify - Web Challenge - HackTheBox](./posts/neonify_htb.html)
 * [Soccer - HackTheBox](./posts/soccer_htb.html)
+* [Stocker - HackTheBox](./posts/stocker_htb.html)
