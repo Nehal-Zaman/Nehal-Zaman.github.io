@@ -8,3 +8,4 @@ layout: default
 * [Neonify - Web Challenge - HackTheBox](./posts/neonify_htb.html)
 * [Soccer - HackTheBox](./posts/soccer_htb.html)
 * [Stocker - HackTheBox](./posts/stocker_htb.html)
+* [SSTI - Hacking Templates and Unleashing Server-Side Power](./posts/templated_htb.html)

