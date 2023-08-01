@@ -9,3 +9,4 @@ layout: default
 * [Soccer - HackTheBox](./posts/soccer_htb.html)
 * [Stocker - HackTheBox](./posts/stocker_htb.html)
 * [SSTI - Hacking Templates and Unleashing Server-Side Power](./posts/templated_htb.html)
+* [Solving the Sau Mystery - A Thrilling HTB Machine Walkthrough](./posts/sau_htb.html)
