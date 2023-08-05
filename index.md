@@ -10,3 +10,4 @@ layout: default
 * [Stocker - HackTheBox](./posts/stocker_htb.html)
 * [SSTI - Hacking Templates and Unleashing Server-Side Power](./posts/templated_htb.html)
 * [Solving the Sau Mystery - A Thrilling HTB Machine Walkthrough](./posts/sau_htb.html)
+* [Pilgrimage HTB - Unmasking the Path - Git Exposure, CVE Exploits, and Complete Control](./posts/pilgrimage_htb.html)
