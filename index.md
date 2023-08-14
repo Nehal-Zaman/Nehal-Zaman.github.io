@@ -12,3 +12,4 @@ layout: default
 * [Solving the Sau Mystery - A Thrilling HTB Machine Walkthrough](./posts/sau_htb.html)
 * [Pilgrimage HTB - Unmasking the Path - Git Exposure, CVE Exploits, and Complete Control](./posts/pilgrimage_htb.html)
 * [From Default Credentials to Full Control - Unraveling MonitorsTwo on HTB](./posts/monitorstwo_htb.html)
+* [A tale of finding an interesting XSS](./posts/a-tale-of-finding-an-interesting-xss.html)
