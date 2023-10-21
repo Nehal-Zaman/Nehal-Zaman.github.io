@@ -13,3 +13,4 @@ layout: default
 * [Pilgrimage HTB - Unmasking the Path - Git Exposure, CVE Exploits, and Complete Control](./posts/pilgrimage_htb.html)
 * [From Default Credentials to Full Control - Unraveling MonitorsTwo on HTB](./posts/monitorstwo_htb.html)
 * [A tale of finding an interesting XSS](./posts/a-tale-of-finding-an-interesting-xss.html)
+* [Analytical HackTheBox Writeup - Metabase Pre auth RCE and Gameoverlay Ubuntu Privilege Escalation](./posts/analytical_htb.html)
