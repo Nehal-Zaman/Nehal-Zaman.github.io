@@ -14,3 +14,4 @@ layout: default
 * [From Default Credentials to Full Control - Unraveling MonitorsTwo on HTB](./posts/monitorstwo_htb.html)
 * [A tale of finding an interesting XSS](./posts/a-tale-of-finding-an-interesting-xss.html)
 * [Analytical HackTheBox Writeup - Metabase Pre auth RCE and Gameoverlay Ubuntu Privilege Escalation](./posts/analytical_htb.html)
+* [Cracking Clicker - NFS Enumeration, Broken Access Control, RCE via File Write, and Privilege Escalation via Environment Variables](./posts/clicker_htb.html)
