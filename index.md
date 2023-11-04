@@ -15,3 +15,4 @@ layout: default
 * [A tale of finding an interesting XSS](./posts/a-tale-of-finding-an-interesting-xss.html)
 * [Analytical HackTheBox Writeup - Metabase Pre auth RCE and Gameoverlay Ubuntu Privilege Escalation](./posts/analytical_htb.html)
 * [Cracking Clicker - NFS Enumeration, Broken Access Control, RCE via File Write, and Privilege Escalation via Environment Variables](./posts/clicker_htb.html)
+* [Exploring Sandworm - SSTI, Sandbox Bypass, and Firejail Root Exploit for Privilege Escalation](./posts/sandworm_htb.html)
